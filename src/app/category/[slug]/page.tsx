@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { Suspense, useState, useMemo } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getCategoryBySlug, getMaterialsByCategory } from "@/lib/data";
@@ -8,7 +8,7 @@ import MaterialCard from "@/components/material-card";
 import MaterialModal from "@/components/material-modal";
 import { Material } from "@/lib/types";
 
-export default function CategoryPage() {
+function CategoryContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const slug = params.slug as string;
@@ -29,20 +29,13 @@ export default function CategoryPage() {
   );
 
   if (!category) {
-    return (
-      <main className="flex-1 flex items-center justify-center">
-        <div className="text-gray-400">カテゴリが見つかりません</div>
-      </main>
-    );
+    return <div className="text-gray-400 text-center py-16">カテゴリが見つかりません</div>;
   }
 
   return (
-    <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
-      {/* パンくず */}
+    <>
       <nav className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
-        <Link href="/" className="hover:text-brand transition-colors">
-          トップ
-        </Link>
+        <Link href="/" className="hover:text-brand transition-colors">トップ</Link>
         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
@@ -52,7 +45,6 @@ export default function CategoryPage() {
       <h1 className="text-2xl font-bold text-brand mb-1">{category.name}</h1>
       <p className="text-sm text-gray-400 mb-6">{filtered.length}件の資材</p>
 
-      {/* 検索 */}
       <div className="mb-6">
         <div className="relative max-w-sm">
           <input
@@ -74,7 +66,6 @@ export default function CategoryPage() {
         </div>
       </div>
 
-      {/* 資材一覧 */}
       {filtered.length === 0 ? (
         <p className="text-gray-400 text-center py-16">
           {search ? "該当する資材がありません" : "資材が登録されていません"}
@@ -91,13 +82,22 @@ export default function CategoryPage() {
         </div>
       )}
 
-      {/* モーダル */}
       {selectedMaterial && (
         <MaterialModal
           material={selectedMaterial}
           onClose={() => setSelectedMaterial(null)}
         />
       )}
+    </>
+  );
+}
+
+export default function CategoryPage() {
+  return (
+    <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6">
+      <Suspense fallback={<p className="text-gray-400 text-center py-16">読み込み中...</p>}>
+        <CategoryContent />
+      </Suspense>
     </main>
   );
 }
