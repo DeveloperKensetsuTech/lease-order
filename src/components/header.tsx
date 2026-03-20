@@ -16,12 +16,7 @@ function SearchBar({ className }: { className?: string }) {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
     return materials
-      .filter(
-        (m) =>
-          m.is_active &&
-          (m.name.toLowerCase().includes(q) ||
-            (m.description && m.description.toLowerCase().includes(q)))
-      )
+      .filter((m) => m.is_active && m.name.toLowerCase().includes(q))
       .slice(0, 8);
   }, [query]);
 

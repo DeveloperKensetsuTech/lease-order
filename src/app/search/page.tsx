@@ -17,10 +17,7 @@ function SearchContent() {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
     return materials.filter(
-      (m) =>
-        m.is_active &&
-        (m.name.toLowerCase().includes(q) ||
-          (m.description && m.description.toLowerCase().includes(q)))
+      (m) => m.is_active && m.name.toLowerCase().includes(q)
     );
   }, [query]);
 
