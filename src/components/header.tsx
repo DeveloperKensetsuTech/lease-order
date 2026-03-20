@@ -129,7 +129,7 @@ export default function Header() {
 
           <div className="flex items-center gap-3">
             {!isAdmin && (
-              <Link href="/admin" className="text-xs text-gray-400 hover:text-gray-600 hidden sm:block">
+              <Link href="/admin" className="text-xs text-gray-400 hover:text-gray-600">
                 管理
               </Link>
             )}
