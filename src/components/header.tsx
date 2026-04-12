@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -118,9 +119,17 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="h-14 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-xl font-bold tracking-tight text-brand">資材発注</span>
+        <div className="h-16 sm:h-20 flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+            <Image
+              src="/images/logo-union.png"
+              alt="union"
+              width={486}
+              height={823}
+              priority
+              className="h-12 sm:h-14 w-auto"
+            />
+            <span className="text-lg sm:text-2xl font-bold tracking-tight text-cyan-500">発注<span className="text-xs sm:text-sm font-medium ml-1">for リース</span></span>
           </Link>
 
           {!isAdmin && (

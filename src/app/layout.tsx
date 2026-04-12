@@ -4,7 +4,7 @@ import { CartProvider } from "@/lib/cart-context";
 import Header from "@/components/header";
 
 export const metadata: Metadata = {
-  title: "資材発注システム",
+  title: "union発注for リース",
   description: "仮設足場機材の発注管理システム",
 };
 
