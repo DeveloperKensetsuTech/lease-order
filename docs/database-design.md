@@ -247,9 +247,10 @@ DB設計に影響する未確定事項。詳細は `~/.claude/.../sanshin_hearin
 ## TODO
 
 ### スキーマ・シード生成
-- 生成スクリプト: `scripts/generate-seed.ts`（`src/lib/data.ts` を読んで `supabase/schema.sql` を出力）
-- 再生成: `npx tsx scripts/generate-seed.ts > supabase/schema.sql`
-- マスタを `data.ts` で編集 → 再生成 → Supabaseに流し直し、で常に同期可能
+- スキーマ: `supabase/migrations/0001_init_schema.sql`（手動メンテ。`supabase db push` で本番にも適用）
+- デモシード: `supabase/seed.sql`（`scripts/generate-seed.ts` が `src/lib/data.ts` から生成。`supabase db reset` でローカル/デモ環境のみに投入され、本番には流れない）
+- 再生成: `npx tsx scripts/generate-seed.ts > supabase/seed.sql`
+- 顧客導入時はこのシードを使わず、`tenants` を新規作成して管理画面からカタログを登録する想定
 
 ### スキーマ移行
 - [ ] `tenants` テーブル新設

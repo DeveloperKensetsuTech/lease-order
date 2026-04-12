@@ -3,11 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
+import { useCatalog } from "@/lib/catalog-context";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { materials, categories } from "@/lib/data";
 
 function SearchBar({ className }: { className?: string }) {
+  const { materials, categories } = useCatalog();
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
