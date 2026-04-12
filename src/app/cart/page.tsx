@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
+import { submitOrder } from "./actions";
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, clearCart } = useCart();
@@ -12,29 +13,34 @@ export default function CartPage() {
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
   const [orderNumber, setOrderNumber] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   const handleSubmit = () => {
     if (!companyName.trim() || !contactName.trim()) return;
+    setErrorMessage("");
 
-    const num = `ORD-${Date.now().toString(36).toUpperCase()}`;
-    const order = {
-      order_number: num,
-      company_name: companyName,
-      contact_name: contactName,
-      phone,
-      note,
-      items: items.map((i) => ({ name: i.material.name, quantity: i.quantity })),
-      created_at: new Date().toISOString(),
-      status: "pending",
-    };
+    startTransition(async () => {
+      const result = await submitOrder({
+        companyName,
+        contactName,
+        phone,
+        note,
+        items: items.map((i) => ({
+          materialId: i.material.id,
+          quantity: i.quantity,
+        })),
+      });
 
-    const existing = JSON.parse(localStorage.getItem("orders") || "[]");
-    existing.push(order);
-    localStorage.setItem("orders", JSON.stringify(existing));
+      if (!result.ok) {
+        setErrorMessage(result.error);
+        return;
+      }
 
-    setOrderNumber(num);
-    clearCart();
-    setStep("done");
+      setOrderNumber(result.orderNumber);
+      clearCart();
+      setStep("done");
+    });
   };
 
   if (step === "done") {
@@ -192,19 +198,26 @@ export default function CartPage() {
             ))}
           </div>
 
+          {errorMessage && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+              {errorMessage}
+            </div>
+          )}
+
           <div className="flex gap-3">
             <button
               onClick={() => setStep("cart")}
-              className="flex-1 py-3 border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors"
+              disabled={isPending}
+              className="flex-1 py-3 border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               戻る
             </button>
             <button
               onClick={handleSubmit}
-              disabled={!companyName.trim() || !contactName.trim()}
+              disabled={!companyName.trim() || !contactName.trim() || isPending}
               className="flex-1 py-3 bg-brand text-white rounded-full text-sm font-medium hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              発注する
+              {isPending ? "送信中..." : "発注する"}
             </button>
           </div>
         </>
