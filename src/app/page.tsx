@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { categories } from "@/lib/data";
+import { getCategories } from "@/lib/data";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const categories = await getCategories();
   return (
     <main className="flex-1">
       {/* カテゴリ一覧 */}
