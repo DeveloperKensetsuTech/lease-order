@@ -1,8 +1,7 @@
 import { cache } from "react";
 import { supabase } from "./supabase";
+import { getTenantId } from "./tenant";
 import { Category, Material } from "./types";
-
-const TENANT_ID = "00000000-0000-0000-0000-000000000001";
 
 type MaterialImageJoin = {
   sort_order: number;
@@ -42,22 +41,24 @@ function mapMaterial(row: MaterialRow): Material {
 }
 
 export const getCategories = cache(async (): Promise<Category[]> => {
+  const tenantId = await getTenantId();
   const { data, error } = await supabase
     .from("categories")
     .select("id, name, slug, image_url, sort_order")
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .order("sort_order");
   if (error) throw error;
   return data ?? [];
 });
 
 export const getAllMaterials = cache(async (): Promise<Material[]> => {
+  const tenantId = await getTenantId();
   const { data, error } = await supabase
     .from("materials")
     .select(
       "id, category_id, name, slug, description, spec, sort_order, is_active, material_images(sort_order, is_primary, images(url))"
     )
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("is_active", true)
     .order("sort_order");
   if (error) throw error;

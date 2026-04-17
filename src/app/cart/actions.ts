@@ -1,8 +1,7 @@
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
-
-const TENANT_ID = "00000000-0000-0000-0000-000000000001";
+import { getTenantId } from "@/lib/tenant";
 
 type SubmitOrderInput = {
   companyName: string;
@@ -35,10 +34,12 @@ export async function submitOrder(
 
   if (!items.length) return { ok: false, error: "有効な明細がありません" };
 
+  const tenantId = await getTenantId();
+
   const { data: materials, error: matErr } = await supabaseAdmin
     .from("materials")
     .select("id, name")
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .in(
       "id",
       items.map((i) => i.materialId)
@@ -60,7 +61,7 @@ export async function submitOrder(
   const { data: order, error: orderErr } = await supabaseAdmin
     .from("orders")
     .insert({
-      tenant_id: TENANT_ID,
+      tenant_id: tenantId,
       order_number: orderNumber,
       company_name: companyName,
       contact_name: contactName,

@@ -1,35 +1,26 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { Category, Material } from "@/lib/types";
+import type { AdminCategoryRow } from "@/lib/admin-data";
 import {
-  createMaterial,
-  setMaterialActive,
-  updateMaterial,
+  createCategory,
+  deleteCategory,
+  updateCategory,
 } from "@/app/admin/actions";
 
 type EditingState =
-  | { mode: "create"; categoryId: string }
-  | { mode: "edit"; material: Material };
+  | { mode: "create" }
+  | { mode: "edit"; category: AdminCategoryRow };
 
-export default function AdminMaterialsView({
+export default function AdminCategoriesView({
   categories,
-  allMaterials,
 }: {
-  categories: Category[];
-  allMaterials: Material[];
+  categories: AdminCategoryRow[];
 }) {
-  const [selectedCategoryId, setSelectedCategoryId] = useState(
-    categories[0]?.id ?? ""
-  );
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [toastMessage, setToastMessage] = useState("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-
-  const filtered = allMaterials
-    .filter((m) => m.category_id === selectedCategoryId)
-    .sort((a, b) => a.sort_order - b.sort_order);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -41,10 +32,10 @@ export default function AdminMaterialsView({
     startTransition(async () => {
       try {
         if (editing?.mode === "edit") {
-          await updateMaterial(editing.material.id, formData);
+          await updateCategory(editing.category.id, formData);
           showToast("更新しました");
         } else {
-          await createMaterial(formData);
+          await createCategory(formData);
           showToast("追加しました");
         }
         setEditing(null);
@@ -54,68 +45,50 @@ export default function AdminMaterialsView({
     });
   };
 
-  const handleToggleActive = (material: Material) => {
+  const handleDelete = (cat: AdminCategoryRow) => {
+    if (cat.material_count > 0) {
+      showToast("資材が紐付いているため削除できません");
+      return;
+    }
+    if (!confirm(`カテゴリ「${cat.name}」を削除します。よろしいですか？`)) return;
     startTransition(async () => {
       try {
-        await setMaterialActive(material.id, !material.is_active);
-        showToast(material.is_active ? "非公開にしました" : "公開しました");
+        await deleteCategory(cat.id);
+        showToast("削除しました");
       } catch (e) {
-        setError(e instanceof Error ? e.message : "更新に失敗しました");
+        showToast(e instanceof Error ? e.message : "削除に失敗しました");
       }
     });
   };
 
   return (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
-      <h1 className="text-2xl font-bold text-brand mb-6">資材マスタ</h1>
+      <h1 className="text-2xl font-bold text-brand mb-6">カテゴリマスタ</h1>
 
-      {/* カテゴリ選択 */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-4 px-4">
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setSelectedCategoryId(cat.id)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              selectedCategoryId === cat.id
-                ? "bg-brand text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {cat.name}
-          </button>
-        ))}
-      </div>
-
-      {/* ヘッダー */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm text-gray-400">{filtered.length}件</span>
+        <span className="text-sm text-gray-400">{categories.length}件</span>
         <button
-          onClick={() =>
-            setEditing({ mode: "create", categoryId: selectedCategoryId })
-          }
+          onClick={() => setEditing({ mode: "create" })}
           className="px-4 py-2 bg-brand text-white rounded-full text-sm font-medium hover:bg-brand-light transition-colors"
         >
           + 新規追加
         </button>
       </div>
 
-      {/* 資材リスト */}
       <div className="space-y-2">
-        {filtered.map((mat) => (
+        {categories.map((cat) => (
           <div
-            key={mat.id}
-            className={`flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 ${
-              !mat.is_active ? "opacity-50" : ""
-            }`}
+            key={cat.id}
+            className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
-                {mat.image_url ? (
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
+                {cat.image_url ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    src={mat.image_url}
+                    src={cat.image_url}
                     alt=""
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <span className="text-gray-300 text-[10px]">NO IMG</span>
@@ -123,23 +96,28 @@ export default function AdminMaterialsView({
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-brand truncate">
-                  {mat.name}
+                  {cat.name}
                 </p>
                 <p className="text-xs text-gray-400 truncate">
-                  {mat.description || "説明なし"}
+                  {cat.slug} ・ 資材 {cat.material_count}件
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
               <button
-                onClick={() => handleToggleActive(mat)}
-                disabled={isPending}
-                className="text-xs px-2.5 py-1.5 bg-gray-50 text-gray-500 rounded-full hover:bg-gray-100 disabled:opacity-40"
+                onClick={() => handleDelete(cat)}
+                disabled={isPending || cat.material_count > 0}
+                className="text-xs px-2.5 py-1.5 bg-gray-50 text-gray-500 rounded-full hover:bg-red-50 hover:text-red-600 disabled:opacity-30 disabled:hover:bg-gray-50 disabled:hover:text-gray-500"
+                title={
+                  cat.material_count > 0
+                    ? "資材が紐付いているため削除不可"
+                    : "削除"
+                }
               >
-                {mat.is_active ? "非公開" : "公開"}
+                削除
               </button>
               <button
-                onClick={() => setEditing({ mode: "edit", material: mat })}
+                onClick={() => setEditing({ mode: "edit", category: cat })}
                 className="text-sm px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors"
               >
                 編集
@@ -149,7 +127,6 @@ export default function AdminMaterialsView({
         ))}
       </div>
 
-      {/* 保存トースト */}
       {toastMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px] pointer-events-none">
           <div className="bg-white rounded-2xl shadow-2xl px-8 py-6 flex flex-col items-center gap-3">
@@ -173,20 +150,21 @@ export default function AdminMaterialsView({
         </div>
       )}
 
-      {/* 編集モーダル */}
       {editing && (
         <EditModal
-          key={editing.mode === "edit" ? editing.material.id : "new"}
-          categories={categories}
+          key={editing.mode === "edit" ? editing.category.id : "new"}
           initial={
             editing.mode === "edit"
-              ? { ...editing.material }
+              ? {
+                  name: editing.category.name,
+                  slug: editing.category.slug,
+                  sort_order: editing.category.sort_order,
+                  image_url: editing.category.image_url,
+                }
               : {
-                  category_id: editing.categoryId,
                   name: "",
-                  description: "",
-                  sort_order: filtered.length,
-                  is_active: true,
+                  slug: "",
+                  sort_order: categories.length,
                   image_url: null,
                 }
           }
@@ -205,16 +183,13 @@ export default function AdminMaterialsView({
 }
 
 type EditInitial = {
-  category_id: string;
   name: string;
-  description: string | null;
+  slug: string;
   sort_order: number;
-  is_active: boolean;
-  image_url?: string | null;
+  image_url: string | null;
 };
 
 function EditModal({
-  categories,
   initial,
   isEdit,
   pending,
@@ -222,7 +197,6 @@ function EditModal({
   onClose,
   onSubmit,
 }: {
-  categories: Category[];
   initial: EditInitial;
   isEdit: boolean;
   pending: boolean;
@@ -230,14 +204,12 @@ function EditModal({
   onClose: () => void;
   onSubmit: (formData: FormData) => void;
 }) {
-  const [categoryId, setCategoryId] = useState(initial.category_id);
   const [name, setName] = useState(initial.name);
-  const [description, setDescription] = useState(initial.description ?? "");
+  const [slug, setSlug] = useState(initial.slug);
   const [sortOrder, setSortOrder] = useState(initial.sort_order);
-  const [isActive, setIsActive] = useState(initial.is_active);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(
-    initial.image_url ?? null
+    initial.image_url
   );
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,14 +221,10 @@ function EditModal({
   };
 
   const handleFormAction = (formData: FormData) => {
-    formData.set("category_id", categoryId);
     formData.set("name", name);
-    formData.set("description", description);
+    formData.set("slug", slug);
     formData.set("sort_order", String(sortOrder));
-    formData.set("is_active", isActive ? "true" : "false");
-    if (imageFile) {
-      formData.set("image", imageFile);
-    }
+    if (imageFile) formData.set("image", imageFile);
     onSubmit(formData);
   };
 
@@ -272,7 +240,7 @@ function EditModal({
         <form action={handleFormAction} className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-brand">
-              {isEdit ? "資材を編集" : "資材を追加"}
+              {isEdit ? "カテゴリを編集" : "カテゴリを追加"}
             </h2>
             <button
               type="button"
@@ -298,23 +266,7 @@ function EditModal({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                カテゴリ
-              </label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand"
-              >
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                資材名 <span className="text-red-500">*</span>
+                カテゴリ名 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -326,12 +278,13 @@ function EditModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                説明
+                slug（URL。空欄なら名前から自動生成）
               </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={2}
+              <input
+                type="text"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder="例: karigakoi"
                 className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand"
               />
             </div>
@@ -346,7 +299,7 @@ function EditModal({
                     <img
                       src={imagePreview}
                       alt=""
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                 )}
@@ -358,33 +311,20 @@ function EditModal({
                 />
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  並び順
-                </label>
-                <input
-                  type="number"
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
-                  className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand"
-                />
-              </div>
-              <label className="flex items-center gap-2 pt-6">
-                <input
-                  type="checkbox"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                  className="w-4 h-4 accent-brand"
-                />
-                <span className="text-sm text-gray-700">公開</span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                並び順
               </label>
+              <input
+                type="number"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
+                className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand"
+              />
             </div>
           </div>
 
-          {error && (
-            <p className="mt-4 text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
           <div className="flex gap-3 mt-6">
             <button

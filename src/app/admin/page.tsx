@@ -41,6 +41,17 @@ export default async function AdminPage() {
             <span className="text-xs text-gray-400">{materialCount}件</span>
           </div>
         </Link>
+        <Link
+          href="/admin/categories"
+          className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-brand mb-1">カテゴリマスタ</h2>
+              <p className="text-sm text-gray-500">カテゴリの登録・編集・画像管理</p>
+            </div>
+          </div>
+        </Link>
       </div>
     </main>
   );

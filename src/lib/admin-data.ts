@@ -1,8 +1,9 @@
 import { cache } from "react";
 import { supabaseAdmin } from "./supabase-admin";
-import type { Material } from "./types";
+import { getTenantId } from "./tenant";
+import type { Category, Material } from "./types";
 
-const TENANT_ID = "00000000-0000-0000-0000-000000000001";
+export type AdminCategoryRow = Category & { material_count: number };
 
 type AdminMaterialRow = {
   id: string;
@@ -22,13 +23,36 @@ type AdminMaterialRow = {
     | null;
 };
 
+export const listCategoriesForAdmin = cache(
+  async (): Promise<AdminCategoryRow[]> => {
+    const tenantId = await getTenantId();
+    const { data, error } = await supabaseAdmin
+      .from("categories")
+      .select("id, name, slug, image_url, sort_order, materials(id)")
+      .eq("tenant_id", tenantId)
+      .order("sort_order");
+    if (error) throw error;
+
+    type Row = Category & { materials: { id: string }[] | null };
+    return ((data ?? []) as unknown as Row[]).map((row) => ({
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      image_url: row.image_url,
+      sort_order: row.sort_order,
+      material_count: row.materials?.length ?? 0,
+    }));
+  }
+);
+
 export const listMaterialsForAdmin = cache(async (): Promise<Material[]> => {
+  const tenantId = await getTenantId();
   const { data, error } = await supabaseAdmin
     .from("materials")
     .select(
       "id, category_id, name, slug, description, spec, sort_order, is_active, material_images(sort_order, is_primary, images(url))"
     )
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .order("sort_order");
   if (error) throw error;
 
@@ -113,12 +137,13 @@ type OrdersListRaw = {
 export async function listOrders(
   filterStatus?: OrderStatus
 ): Promise<OrderListRow[]> {
+  const tenantId = await getTenantId();
   let query = supabaseAdmin
     .from("orders")
     .select(
       "id, order_number, company_name, contact_name, status, created_at, order_items(quantity)"
     )
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
   if (filterStatus) {
@@ -163,12 +188,13 @@ type OrderDetailRaw = {
 };
 
 export const getOrder = cache(async (id: string): Promise<OrderDetail | null> => {
+  const tenantId = await getTenantId();
   const { data, error } = await supabaseAdmin
     .from("orders")
     .select(
       "id, order_number, company_name, contact_name, phone, email, note, status, approved_at, approved_by, reject_reason, rejected_at, shipped_at, completed_at, created_at, order_items(id, material_id, variant_id, material_name, variant_name, quantity, approved_quantity, created_at)"
     )
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("id", id)
     .maybeSingle();
 
@@ -210,26 +236,26 @@ export const getOrder = cache(async (id: string): Promise<OrderDetail | null> =>
 });
 
 export async function countPendingOrders(): Promise<number> {
+  const tenantId = await getTenantId();
   const { count, error } = await supabaseAdmin
     .from("orders")
     .select("id", { count: "exact", head: true })
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("status", "pending");
   if (error) throw error;
   return count ?? 0;
 }
 
 export async function countActiveMaterials(): Promise<number> {
+  const tenantId = await getTenantId();
   const { count, error } = await supabaseAdmin
     .from("materials")
     .select("id", { count: "exact", head: true })
-    .eq("tenant_id", TENANT_ID)
+    .eq("tenant_id", tenantId)
     .eq("is_active", true);
   if (error) throw error;
   return count ?? 0;
 }
-
-export const TENANT_ID_CONST = TENANT_ID;
 
 export const statusLabels: Record<OrderStatus, { label: string; color: string }> = {
   pending: { label: "未確認", color: "bg-yellow-100 text-yellow-800" },

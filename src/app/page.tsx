@@ -10,7 +10,7 @@ export default async function HomePage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <h2 className="text-lg font-bold text-brand mb-6">カテゴリから探す</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-          {categories.map((category) => (
+          {categories.map((category, index) => (
             <Link
               key={category.id}
               href={`/category/${category.slug}`}
@@ -22,6 +22,7 @@ export default async function HomePage() {
                     src={category.image_url}
                     alt={category.name}
                     fill
+                    priority={index === 0}
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   />

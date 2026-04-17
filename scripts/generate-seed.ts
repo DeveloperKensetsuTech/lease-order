@@ -1,8 +1,9 @@
 import { categories, materials } from "./seed-source";
 
-const TENANT_ID = "00000000-0000-0000-0000-000000000001";
-const TENANT_NAME = "三信産業";
-const TENANT_SLUG = "sanshin";
+const TENANTS = [
+  { id: "00000000-0000-0000-0000-000000000001", name: "Union", slug: "union" },
+  { id: "00000000-0000-0000-0000-000000000002", name: "三信産業", slug: "sanshin" },
+];
 
 function sqlString(s: string | null | undefined): string {
   if (s === null || s === undefined) return "null";
@@ -23,62 +24,94 @@ lines.push("-- NOT applied to production via `supabase db push`.");
 lines.push("-- ============================================================");
 lines.push("");
 
-lines.push(`insert into tenants (id, name, slug) values
-  ('${TENANT_ID}', ${sqlString(TENANT_NAME)}, ${sqlString(TENANT_SLUG)});`);
-lines.push("");
-
-lines.push("-- categories");
-const categoryValues = categories.map(c =>
-  `  ('${TENANT_ID}', ${sqlString(c.name)}, ${sqlString(c.slug)}, ${sqlString(c.image_url)}, ${c.sort_order})`
+lines.push("-- tenants");
+const tenantValues = TENANTS.map(
+  (t) => `  ('${t.id}', ${sqlString(t.name)}, ${sqlString(t.slug)})`
 ).join(",\n");
-lines.push(`insert into categories (tenant_id, name, slug, image_url, sort_order) values\n${categoryValues};`);
+lines.push(`insert into tenants (id, name, slug) values\n${tenantValues};`);
 lines.push("");
 
-lines.push("-- materials");
-const materialValues = materials.map(m => {
-  const catSlug = categories.find(c => c.id === m.category_id)?.slug;
-  return `  ('${TENANT_ID}', (select id from categories where tenant_id='${TENANT_ID}' and slug=${sqlString(catSlug!)}), ${sqlString(m.name)}, ${sqlString(m.slug)}, ${sqlString(m.description)}, ${sqlJsonb(m.spec)}, ${m.sort_order}, ${m.is_active})`;
-}).join(",\n");
-lines.push(`insert into materials (tenant_id, category_id, name, slug, description, spec, sort_order, is_active) values\n${materialValues};`);
-lines.push("");
+for (const tenant of TENANTS) {
+  lines.push(`-- ==================== tenant: ${tenant.slug} ====================`);
+  lines.push("");
 
-lines.push("-- images (unique URLs collected from materials' image_url + catalog_pages)");
-const urlSet = new Set<string>();
-for (const m of materials) {
-  if (m.image_url) urlSet.add(m.image_url);
-  for (const p of (m.catalog_pages || [])) urlSet.add(p);
-}
-const urls = Array.from(urlSet).sort();
-const imageValues = urls.map(u => `  ('${TENANT_ID}', ${sqlString(u)})`).join(",\n");
-lines.push(`insert into images (tenant_id, url) values\n${imageValues};`);
-lines.push("");
+  lines.push(`-- categories (${tenant.slug})`);
+  const categoryValues = categories
+    .map(
+      (c) =>
+        `  ('${tenant.id}', ${sqlString(c.name)}, ${sqlString(c.slug)}, ${sqlString(c.image_url)}, ${c.sort_order})`
+    )
+    .join(",\n");
+  lines.push(
+    `insert into categories (tenant_id, name, slug, image_url, sort_order) values\n${categoryValues};`
+  );
+  lines.push("");
 
-lines.push("-- material_images (M:N)");
-type MILink = { slug: string; url: string; sort_order: number; is_primary: boolean };
-const miLinks: MILink[] = [];
-for (const m of materials) {
-  const seen = new Set<string>();
-  let order = 0;
-  if (m.image_url) {
-    miLinks.push({ slug: m.slug, url: m.image_url, sort_order: order++, is_primary: true });
-    seen.add(m.image_url);
+  lines.push(`-- materials (${tenant.slug})`);
+  const materialValues = materials
+    .map((m) => {
+      const catSlug = categories.find((c) => c.id === m.category_id)?.slug;
+      return `  ('${tenant.id}', (select id from categories where tenant_id='${tenant.id}' and slug=${sqlString(catSlug!)}), ${sqlString(m.name)}, ${sqlString(m.slug)}, ${sqlString(m.description)}, ${sqlJsonb(m.spec)}, ${m.sort_order}, ${m.is_active})`;
+    })
+    .join(",\n");
+  lines.push(
+    `insert into materials (tenant_id, category_id, name, slug, description, spec, sort_order, is_active) values\n${materialValues};`
+  );
+  lines.push("");
+
+  lines.push(`-- images (${tenant.slug})`);
+  const urlSet = new Set<string>();
+  for (const m of materials) {
+    if (m.image_url) urlSet.add(m.image_url);
+    for (const p of m.catalog_pages || []) urlSet.add(p);
   }
-  for (const p of (m.catalog_pages || [])) {
-    if (seen.has(p)) continue;
-    miLinks.push({ slug: m.slug, url: p, sort_order: order++, is_primary: false });
-    seen.add(p);
+  const urls = Array.from(urlSet).sort();
+  const imageValues = urls
+    .map((u) => `  ('${tenant.id}', ${sqlString(u)})`)
+    .join(",\n");
+  lines.push(`insert into images (tenant_id, url) values\n${imageValues};`);
+  lines.push("");
+
+  lines.push(`-- material_images (${tenant.slug})`);
+  type MILink = {
+    slug: string;
+    url: string;
+    sort_order: number;
+    is_primary: boolean;
+  };
+  const miLinks: MILink[] = [];
+  for (const m of materials) {
+    const seen = new Set<string>();
+    let order = 0;
+    if (m.image_url) {
+      miLinks.push({
+        slug: m.slug,
+        url: m.image_url,
+        sort_order: order++,
+        is_primary: true,
+      });
+      seen.add(m.image_url);
+    }
+    for (const p of m.catalog_pages || []) {
+      if (seen.has(p)) continue;
+      miLinks.push({ slug: m.slug, url: p, sort_order: order++, is_primary: false });
+      seen.add(p);
+    }
   }
-}
-const miValues = miLinks.map(l =>
-  `  (${sqlString(l.slug)}, ${sqlString(l.url)}, ${l.sort_order}, ${l.is_primary})`
-).join(",\n");
-lines.push(`insert into material_images (material_id, image_id, sort_order, is_primary)
+  const miValues = miLinks
+    .map(
+      (l) =>
+        `  (${sqlString(l.slug)}, ${sqlString(l.url)}, ${l.sort_order}, ${l.is_primary})`
+    )
+    .join(",\n");
+  lines.push(`insert into material_images (material_id, image_id, sort_order, is_primary)
 select m.id, i.id, v.sort_order, v.is_primary
 from (values
 ${miValues}
 ) as v(material_slug, image_url, sort_order, is_primary)
-join materials m on m.tenant_id='${TENANT_ID}' and m.slug = v.material_slug
-join images i on i.tenant_id='${TENANT_ID}' and i.url = v.image_url;`);
-lines.push("");
+join materials m on m.tenant_id='${tenant.id}' and m.slug = v.material_slug
+join images i on i.tenant_id='${tenant.id}' and i.url = v.image_url;`);
+  lines.push("");
+}
 
 console.log(lines.join("\n"));
