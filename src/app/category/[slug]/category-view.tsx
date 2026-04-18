@@ -30,16 +30,16 @@ function CategoryViewInner({
 
   return (
     <>
-      <nav className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
-        <Link href="/" className="hover:text-brand transition-colors">トップ</Link>
+      <nav className="flex items-center gap-1.5 text-sm text-subtle mb-6">
+        <Link href="/" className="hover:text-accent transition-colors">トップ</Link>
         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
-        <span className="text-brand font-medium">{category.name}</span>
+        <span className="text-accent font-medium">{category.name}</span>
       </nav>
 
-      <h1 className="text-2xl font-bold text-brand mb-1">{category.name}</h1>
-      <p className="text-sm text-gray-400 mb-6">{filtered.length}件の資材</p>
+      <h1 className="text-2xl font-bold text-accent mb-1">{category.name}</h1>
+      <p className="text-sm text-subtle mb-6">{filtered.length}件の資材</p>
 
       <div className="mb-6">
         <div className="relative max-w-sm">
@@ -48,10 +48,10 @@ function CategoryViewInner({
             placeholder="この中から検索..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-surface-muted rounded-full text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
           />
           <svg
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -63,7 +63,7 @@ function CategoryViewInner({
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-gray-400 text-center py-16">
+        <p className="text-subtle text-center py-16">
           {search ? "該当する資材がありません" : "資材が登録されていません"}
         </p>
       ) : (
@@ -90,7 +90,7 @@ function CategoryViewInner({
 
 export default function CategoryView(props: { category: Category; materials: Material[] }) {
   return (
-    <Suspense fallback={<p className="text-gray-400 text-center py-16">読み込み中...</p>}>
+    <Suspense fallback={<p className="text-subtle text-center py-16">読み込み中...</p>}>
       <CategoryViewInner {...props} />
     </Suspense>
   );

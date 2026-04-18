@@ -263,5 +263,5 @@ export const statusLabels: Record<OrderStatus, { label: string; color: string }>
   rejected: { label: "却下", color: "bg-red-100 text-red-800" },
   shipped: { label: "出荷済", color: "bg-purple-100 text-purple-800" },
   completed: { label: "完了", color: "bg-green-100 text-green-800" },
-  cancelled: { label: "キャンセル", color: "bg-gray-200 text-gray-700" },
+  cancelled: { label: "キャンセル", color: "bg-surface-muted text-muted" },
 };

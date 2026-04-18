@@ -47,20 +47,20 @@ export default function CartPage() {
     return (
       <main className="flex-1 max-w-lg mx-auto w-full px-4 py-16 text-center">
         <div className="mb-8">
-          <div className="w-16 h-16 bg-brand rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-brand mb-2">発注を受け付けました</h1>
-          <p className="text-sm text-gray-500 mb-1">
-            注文番号: <span className="font-mono font-bold text-brand">{orderNumber}</span>
+          <h1 className="text-xl font-bold text-accent mb-2">発注を受け付けました</h1>
+          <p className="text-sm text-muted mb-1">
+            注文番号: <span className="font-mono font-bold text-accent">{orderNumber}</span>
           </p>
-          <p className="text-sm text-gray-400">担当者より確認のご連絡をいたします。</p>
+          <p className="text-sm text-subtle">担当者より確認のご連絡をいたします。</p>
         </div>
         <Link
           href="/"
-          className="inline-block px-8 py-3 bg-brand text-white rounded-full text-sm font-medium hover:bg-brand-light"
+          className="inline-block px-8 py-3 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover"
         >
           トップに戻る
         </Link>
@@ -72,14 +72,14 @@ export default function CartPage() {
     return (
       <main className="flex-1 max-w-lg mx-auto w-full px-4 py-16 text-center">
         <div className="mb-6">
-          <svg className="h-16 w-16 text-gray-200 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+          <svg className="h-16 w-16 text-subtle mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
-          <p className="text-gray-400">カートは空です</p>
+          <p className="text-subtle">カートは空です</p>
         </div>
         <Link
           href="/"
-          className="inline-block px-8 py-3 bg-brand text-white rounded-full text-sm font-medium hover:bg-brand-light"
+          className="inline-block px-8 py-3 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover"
         >
           資材を探す
         </Link>
@@ -91,36 +91,36 @@ export default function CartPage() {
     <main className="flex-1 max-w-lg mx-auto w-full px-4 py-6">
       {step === "cart" && (
         <>
-          <h1 className="text-2xl font-bold text-brand mb-6">カート</h1>
+          <h1 className="text-2xl font-bold text-accent mb-6">カート</h1>
           <div className="space-y-2 mb-8">
             {items.map((item) => (
               <div
                 key={item.material.id}
-                className="flex items-center gap-3 bg-white p-4 rounded-xl border border-gray-100"
+                className="flex items-center gap-3 bg-surface p-4 rounded-xl border border-border"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-brand truncate">
+                  <p className="text-sm font-medium text-accent truncate">
                     {item.material.name}
                   </p>
                 </div>
-                <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
+                <div className="flex items-center border border-border-strong rounded-full overflow-hidden">
                   <button
                     onClick={() => updateQuantity(item.material.id, Math.max(1, item.quantity - 1))}
-                    className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 text-sm"
+                    className="w-8 h-8 flex items-center justify-center text-muted hover:bg-surface-muted text-sm"
                   >
                     -
                   </button>
                   <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
                   <button
                     onClick={() => updateQuantity(item.material.id, item.quantity + 1)}
-                    className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 text-sm"
+                    className="w-8 h-8 flex items-center justify-center text-muted hover:bg-surface-muted text-sm"
                   >
                     +
                   </button>
                 </div>
                 <button
                   onClick={() => removeItem(item.material.id)}
-                  className="text-gray-300 hover:text-gray-500 transition-colors"
+                  className="text-subtle hover:text-muted transition-colors"
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -131,7 +131,7 @@ export default function CartPage() {
           </div>
           <button
             onClick={() => setStep("form")}
-            className="w-full py-3 bg-brand text-white rounded-full text-sm font-medium hover:bg-brand-light"
+            className="w-full py-3 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover"
           >
             発注手続きへ
           </button>
@@ -140,60 +140,60 @@ export default function CartPage() {
 
       {step === "form" && (
         <>
-          <h1 className="text-2xl font-bold text-brand mb-6">発注情報</h1>
+          <h1 className="text-2xl font-bold text-accent mb-6">発注情報</h1>
           <div className="space-y-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 会社名 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand transition-colors"
+                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 担当者名 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand transition-colors"
+                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 電話番号
               </label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand transition-colors"
+                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 備考
               </label>
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand transition-colors"
+                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
               />
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-4 mb-6">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">注文内容</h3>
+          <div className="bg-surface-muted rounded-xl p-4 mb-6">
+            <h3 className="text-xs font-semibold text-subtle uppercase tracking-wider mb-3">注文内容</h3>
             {items.map((item) => (
               <div key={item.material.id} className="flex justify-between text-sm py-1">
-                <span className="text-gray-700">{item.material.name}</span>
-                <span className="text-gray-400">&times; {item.quantity}</span>
+                <span className="text-foreground">{item.material.name}</span>
+                <span className="text-subtle">&times; {item.quantity}</span>
               </div>
             ))}
           </div>
@@ -208,14 +208,14 @@ export default function CartPage() {
             <button
               onClick={() => setStep("cart")}
               disabled={isPending}
-              className="flex-1 py-3 border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 py-3 border border-border-strong text-foreground rounded-full text-sm font-medium hover:bg-surface-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               戻る
             </button>
             <button
               onClick={handleSubmit}
               disabled={!companyName.trim() || !contactName.trim() || isPending}
-              className="flex-1 py-3 bg-brand text-white rounded-full text-sm font-medium hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 py-3 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {isPending ? "送信中..." : "発注する"}
             </button>

@@ -22,10 +22,10 @@ export default function RootLayout({
 
   return (
     <html lang="ja" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-gray-50">
+      <body className="min-h-full flex flex-col bg-surface-muted">
         <CatalogProvider catalogPromise={catalogPromise}>
           <CartProvider>
-            <Suspense fallback={<div className="h-14 border-b border-gray-100 bg-white" />}>
+            <Suspense fallback={<div className="h-14 border-b border-border bg-surface" />}>
               <Header />
             </Suspense>
             {children}

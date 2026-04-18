@@ -63,13 +63,13 @@ export default function AdminCategoriesView({
 
   return (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
-      <h1 className="text-2xl font-bold text-brand mb-6">カテゴリマスタ</h1>
+      <h1 className="text-2xl font-bold text-accent mb-6">カテゴリマスタ</h1>
 
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm text-gray-400">{categories.length}件</span>
+        <span className="text-sm text-subtle">{categories.length}件</span>
         <button
           onClick={() => setEditing({ mode: "create" })}
-          className="px-4 py-2 bg-brand text-white rounded-full text-sm font-medium hover:bg-brand-light transition-colors"
+          className="px-4 py-2 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover transition-colors"
         >
           + 新規追加
         </button>
@@ -79,10 +79,10 @@ export default function AdminCategoriesView({
         {categories.map((cat) => (
           <div
             key={cat.id}
-            className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100"
+            className="flex items-center justify-between p-4 bg-surface rounded-xl border border-border"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
+              <div className="w-12 h-12 bg-surface-muted rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
                 {cat.image_url ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
@@ -91,14 +91,14 @@ export default function AdminCategoriesView({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-gray-300 text-[10px]">NO IMG</span>
+                  <span className="text-subtle text-[10px]">NO IMG</span>
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-brand truncate">
+                <p className="text-sm font-medium text-accent truncate">
                   {cat.name}
                 </p>
-                <p className="text-xs text-gray-400 truncate">
+                <p className="text-xs text-subtle truncate">
                   {cat.slug} ・ 資材 {cat.material_count}件
                 </p>
               </div>
@@ -107,7 +107,7 @@ export default function AdminCategoriesView({
               <button
                 onClick={() => handleDelete(cat)}
                 disabled={isPending || cat.material_count > 0}
-                className="text-xs px-2.5 py-1.5 bg-gray-50 text-gray-500 rounded-full hover:bg-red-50 hover:text-red-600 disabled:opacity-30 disabled:hover:bg-gray-50 disabled:hover:text-gray-500"
+                className="text-xs px-2.5 py-1.5 bg-surface-muted text-muted rounded-full hover:bg-red-50 hover:text-red-600 disabled:opacity-30 disabled:hover:bg-surface-muted disabled:hover:text-muted"
                 title={
                   cat.material_count > 0
                     ? "資材が紐付いているため削除不可"
@@ -118,7 +118,7 @@ export default function AdminCategoriesView({
               </button>
               <button
                 onClick={() => setEditing({ mode: "edit", category: cat })}
-                className="text-sm px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors"
+                className="text-sm px-3 py-1.5 bg-surface-muted text-muted rounded-full hover:bg-border transition-colors"
               >
                 編集
               </button>
@@ -129,8 +129,8 @@ export default function AdminCategoriesView({
 
       {toastMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px] pointer-events-none">
-          <div className="bg-white rounded-2xl shadow-2xl px-8 py-6 flex flex-col items-center gap-3">
-            <div className="w-12 h-12 bg-brand rounded-full flex items-center justify-center">
+          <div className="bg-surface rounded-2xl shadow-2xl px-8 py-6 flex flex-col items-center gap-3">
+            <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center">
               <svg
                 className="h-6 w-6 text-white"
                 fill="none"
@@ -145,7 +145,7 @@ export default function AdminCategoriesView({
                 />
               </svg>
             </div>
-            <p className="text-base font-medium text-brand">{toastMessage}</p>
+            <p className="text-base font-medium text-accent">{toastMessage}</p>
           </div>
         </div>
       )}
@@ -234,18 +234,18 @@ function EditModal({
       onClick={onClose}
     >
       <div
-        className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-surface w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <form action={handleFormAction} className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-brand">
+            <h2 className="text-lg font-bold text-accent">
               {isEdit ? "カテゴリを編集" : "カテゴリを追加"}
             </h2>
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-subtle hover:text-muted"
             >
               <svg
                 className="h-5 w-5"
@@ -265,7 +265,7 @@ function EditModal({
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 カテゴリ名 <span className="text-red-500">*</span>
               </label>
               <input
@@ -273,11 +273,11 @@ function EditModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand"
+                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 slug（URL。空欄なら名前から自動生成）
               </label>
               <input
@@ -285,16 +285,16 @@ function EditModal({
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="例: karigakoi"
-                className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand"
+                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 画像
               </label>
               <div className="flex items-center gap-4">
                 {imagePreview && (
-                  <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="w-16 h-16 bg-surface-muted rounded-lg overflow-hidden flex-shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={imagePreview}
@@ -307,19 +307,19 @@ function EditModal({
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+                  className="text-sm text-muted file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-surface-muted file:text-foreground hover:file:bg-border"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 並び順
               </label>
               <input
                 type="number"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
-                className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand"
+                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent"
               />
             </div>
           </div>
@@ -331,14 +331,14 @@ function EditModal({
               type="button"
               onClick={onClose}
               disabled={pending}
-              className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 disabled:opacity-40"
+              className="flex-1 py-2.5 border border-border-strong text-foreground rounded-full text-sm font-medium hover:bg-surface-muted disabled:opacity-40"
             >
               キャンセル
             </button>
             <button
               type="submit"
               disabled={pending || !name.trim()}
-              className="flex-1 py-2.5 bg-brand text-white rounded-full text-sm font-medium hover:bg-brand-light disabled:opacity-40"
+              className="flex-1 py-2.5 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover disabled:opacity-40"
             >
               {pending ? "保存中..." : "保存"}
             </button>

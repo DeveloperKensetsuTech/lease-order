@@ -21,20 +21,20 @@ export default function SearchView({
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-brand mb-1">
+      <h1 className="text-2xl font-bold text-accent mb-1">
         &ldquo;{query}&rdquo; の検索結果
       </h1>
-      <p className="text-sm text-gray-400 mb-6">{results.length}件</p>
+      <p className="text-sm text-subtle mb-6">{results.length}件</p>
 
       {results.length === 0 ? (
-        <p className="text-gray-400 text-center py-16">該当する資材がありません</p>
+        <p className="text-subtle text-center py-16">該当する資材がありません</p>
       ) : (
         <div className="space-y-6">
           {Array.from(new Set(results.map((r) => r.category_id))).map((catId) => {
             const catMaterials = results.filter((r) => r.category_id === catId);
             return (
               <div key={catId}>
-                <h2 className="text-sm font-medium text-gray-400 mb-2">{getCategoryName(catId)}</h2>
+                <h2 className="text-sm font-medium text-subtle mb-2">{getCategoryName(catId)}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {catMaterials.map((material) => (
                     <MaterialCard

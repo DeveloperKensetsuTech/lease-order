@@ -58,10 +58,10 @@ function SearchBar({ className }: { className?: string }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
-          className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand transition-colors"
+          className="w-full pl-10 pr-4 py-2 bg-surface-muted rounded-full text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
         />
         <svg
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -72,7 +72,7 @@ function SearchBar({ className }: { className?: string }) {
         {query && (
           <button
             onClick={() => { setQuery(""); setFocused(false); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-foreground"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -82,9 +82,9 @@ function SearchBar({ className }: { className?: string }) {
       </div>
 
       {showDropdown && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50 max-h-[70vh] overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-surface rounded-xl shadow-lg border border-border overflow-hidden z-50 max-h-[70vh] overflow-y-auto">
           {results.length === 0 ? (
-            <div className="px-4 py-8 text-center text-sm text-gray-400">
+            <div className="px-4 py-8 text-center text-sm text-subtle">
               該当する資材がありません
             </div>
           ) : (
@@ -93,13 +93,13 @@ function SearchBar({ className }: { className?: string }) {
                 <button
                   key={material.id}
                   onClick={() => handleSelect(material.category_id)}
-                  className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                  className="w-full px-4 py-3 text-left hover:bg-surface-muted flex items-center gap-3 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-brand truncate">{material.name}</p>
-                    <p className="text-xs text-gray-400">{getCategoryName(material.category_id)}</p>
+                    <p className="text-sm font-medium text-accent truncate">{material.name}</p>
+                    <p className="text-xs text-subtle">{getCategoryName(material.category_id)}</p>
                   </div>
-                  <svg className="h-4 w-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-4 w-4 text-subtle flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
@@ -118,7 +118,7 @@ export default function Header() {
   const isAdmin = pathname.startsWith("/admin");
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
+    <header className="sticky top-0 z-50 bg-surface border-b border-border">
       <div className="max-w-6xl mx-auto px-4">
         <div className="h-16 sm:h-20 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
@@ -139,22 +139,22 @@ export default function Header() {
 
           <div className="flex items-center gap-3">
             {!isAdmin && (
-              <Link href="/admin" className="text-xs text-gray-400 hover:text-gray-600">
+              <Link href="/admin" className="text-xs text-subtle hover:text-foreground">
                 管理
               </Link>
             )}
             {isAdmin && (
-              <Link href="/" className="text-xs text-gray-400 hover:text-gray-600">
+              <Link href="/" className="text-xs text-subtle hover:text-foreground">
                 発注画面
               </Link>
             )}
             <Link
               href="/cart"
-              className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
+              className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-muted transition-colors"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-gray-700"
+                className="h-5 w-5 text-foreground"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -163,7 +163,7 @@ export default function Header() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
               {totalItems > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-brand text-white text-[10px] font-bold rounded-full h-[18px] min-w-[18px] flex items-center justify-center px-1">
+                <span className="absolute -top-0.5 -right-0.5 bg-accent text-white text-[10px] font-bold rounded-full h-[18px] min-w-[18px] flex items-center justify-center px-1">
                   {totalItems}
                 </span>
               )}

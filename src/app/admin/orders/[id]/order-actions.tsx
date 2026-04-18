@@ -47,7 +47,7 @@ export default function OrderActions({ order }: Props) {
 
   if (noActions) {
     return (
-      <p className="text-sm text-gray-400">この発注は {status} 状態のため操作できません。</p>
+      <p className="text-sm text-subtle">この発注は {status} 状態のため操作できません。</p>
     );
   }
 
@@ -58,7 +58,7 @@ export default function OrderActions({ order }: Props) {
           <button
             onClick={() => setModal("approve")}
             disabled={isPending}
-            className="text-sm px-4 py-2 rounded-full bg-brand text-white font-medium hover:bg-brand-light disabled:opacity-40"
+            className="text-sm px-4 py-2 rounded-full bg-accent text-white font-medium hover:bg-accent-hover disabled:opacity-40"
           >
             承認する
           </button>
@@ -102,7 +102,7 @@ export default function OrderActions({ order }: Props) {
           <button
             onClick={() => setModal("cancel")}
             disabled={isPending}
-            className="text-sm px-4 py-2 rounded-full bg-gray-100 text-gray-600 font-medium hover:bg-gray-200 disabled:opacity-40"
+            className="text-sm px-4 py-2 rounded-full bg-surface-muted text-muted font-medium hover:bg-border disabled:opacity-40"
           >
             キャンセル
           </button>
@@ -113,7 +113,7 @@ export default function OrderActions({ order }: Props) {
 
       {modal === "approve" && (
         <Modal title="発注を承認" onClose={() => setModal(null)}>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-muted mb-4">
             必要に応じて承認数量を修正してください。
           </p>
           <div className="space-y-2 mb-6">
@@ -123,13 +123,13 @@ export default function OrderActions({ order }: Props) {
                 className="flex items-center justify-between gap-3 text-sm"
               >
                 <div className="min-w-0">
-                  <p className="text-brand truncate">{it.material_name}</p>
+                  <p className="text-accent truncate">{it.material_name}</p>
                   {it.variant_name && (
-                    <p className="text-xs text-gray-400 truncate">
+                    <p className="text-xs text-subtle truncate">
                       {it.variant_name}
                     </p>
                   )}
-                  <p className="text-xs text-gray-400">発注: {it.quantity}</p>
+                  <p className="text-xs text-subtle">発注: {it.quantity}</p>
                 </div>
                 <input
                   type="number"
@@ -141,7 +141,7 @@ export default function OrderActions({ order }: Props) {
                       [it.id]: Math.max(0, Number(e.target.value) || 0),
                     }))
                   }
-                  className="w-20 px-3 py-2 bg-gray-100 rounded-lg text-sm text-right focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand"
+                  className="w-20 px-3 py-2 bg-surface-muted rounded-lg text-sm text-right focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent"
                 />
               </div>
             ))}
@@ -167,7 +167,7 @@ export default function OrderActions({ order }: Props) {
 
       {modal === "reject" && (
         <Modal title="発注を却下" onClose={() => setModal(null)}>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="block text-sm font-medium text-foreground mb-1.5">
             却下理由 <span className="text-red-500">*</span>
           </label>
           <textarea
@@ -175,7 +175,7 @@ export default function OrderActions({ order }: Props) {
             onChange={(e) => setRejectReason(e.target.value)}
             rows={4}
             placeholder="在庫不足、納期不可 など"
-            className="w-full px-4 py-2.5 bg-gray-100 rounded-lg text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand mb-6"
+            className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent mb-6"
           />
           <ModalFooter
             pending={isPending}
@@ -194,7 +194,7 @@ export default function OrderActions({ order }: Props) {
 
       {modal === "cancel" && (
         <Modal title="発注をキャンセル" onClose={() => setModal(null)}>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-muted mb-6">
             この発注をキャンセル状態にします。元に戻せません。
           </p>
           <ModalFooter
@@ -229,15 +229,15 @@ function Modal({
       onClick={onClose}
     >
       <div
-        className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[85vh] overflow-y-auto shadow-2xl"
+        className="bg-surface w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[85vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-brand">{title}</h2>
+            <h2 className="text-lg font-bold text-accent">{title}</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-subtle hover:text-muted"
             >
               <svg
                 className="h-5 w-5"
@@ -267,25 +267,25 @@ function ModalFooter({
   onCancel,
   onConfirm,
   confirmLabel,
-  confirmVariant = "brand",
+  confirmVariant = "accent",
 }: {
   pending: boolean;
   disabled?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
   confirmLabel: string;
-  confirmVariant?: "brand" | "danger";
+  confirmVariant?: "accent" | "danger";
 }) {
   const confirmClass =
     confirmVariant === "danger"
       ? "bg-red-600 text-white hover:bg-red-700"
-      : "bg-brand text-white hover:bg-brand-light";
+      : "bg-accent text-white hover:bg-accent-hover";
   return (
     <div className="flex gap-3">
       <button
         onClick={onCancel}
         disabled={pending}
-        className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 disabled:opacity-40"
+        className="flex-1 py-2.5 border border-border-strong text-foreground rounded-full text-sm font-medium hover:bg-surface-muted disabled:opacity-40"
       >
         戻る
       </button>

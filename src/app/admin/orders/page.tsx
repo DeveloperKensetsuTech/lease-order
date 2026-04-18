@@ -37,7 +37,7 @@ export default async function AdminOrdersPage({
 
   return (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
-      <h1 className="text-2xl font-bold text-brand mb-6">発注管理</h1>
+      <h1 className="text-2xl font-bold text-accent mb-6">発注管理</h1>
 
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
         {STATUS_FILTERS.map((f) => {
@@ -50,8 +50,8 @@ export default async function AdminOrdersPage({
               href={href}
               className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-brand text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-accent text-white"
+                  : "bg-surface-muted text-muted hover:bg-border"
               }`}
             >
               {f.label}
@@ -61,7 +61,7 @@ export default async function AdminOrdersPage({
       </div>
 
       {orders.length === 0 ? (
-        <p className="text-gray-400 text-center py-12">発注はありません</p>
+        <p className="text-subtle text-center py-12">発注はありません</p>
       ) : (
         <div className="space-y-2">
           {orders.map((order) => {
@@ -70,12 +70,12 @@ export default async function AdminOrdersPage({
               <Link
                 key={order.id}
                 href={`/admin/orders/${order.id}`}
-                className="block bg-white p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors"
+                className="block bg-surface p-4 rounded-xl border border-border hover:bg-surface-muted transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-sm text-gray-500">
+                      <span className="font-mono text-sm text-muted">
                         {order.order_number}
                       </span>
                       <span
@@ -84,20 +84,20 @@ export default async function AdminOrdersPage({
                         {st.label}
                       </span>
                     </div>
-                    <p className="font-medium text-brand truncate">
+                    <p className="font-medium text-accent truncate">
                       {order.company_name} - {order.contact_name}
                     </p>
                     <div className="flex items-center gap-3 mt-1">
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-subtle">
                         {new Date(order.created_at).toLocaleString("ja-JP")}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-subtle">
                         {order.item_count}品目 / {order.total_quantity}点
                       </p>
                     </div>
                   </div>
                   <svg
-                    className="h-5 w-5 text-gray-300 flex-shrink-0 ml-2"
+                    className="h-5 w-5 text-subtle flex-shrink-0 ml-2"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
