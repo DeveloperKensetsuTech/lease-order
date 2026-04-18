@@ -50,7 +50,7 @@ export default async function AdminOrdersPage({
               href={href}
               className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-accent text-white"
+                  ? "bg-primary text-primary-foreground"
                   : "bg-surface-muted text-muted hover:bg-border"
               }`}
             >

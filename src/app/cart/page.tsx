@@ -47,8 +47,8 @@ export default function CartPage() {
     return (
       <main className="flex-1 max-w-lg mx-auto w-full px-4 py-16 text-center">
         <div className="mb-8">
-          <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="h-8 w-8 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
@@ -60,7 +60,7 @@ export default function CartPage() {
         </div>
         <Link
           href="/"
-          className="inline-block px-8 py-3 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover"
+          className="inline-block px-8 py-3 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90"
         >
           トップに戻る
         </Link>
@@ -79,7 +79,7 @@ export default function CartPage() {
         </div>
         <Link
           href="/"
-          className="inline-block px-8 py-3 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover"
+          className="inline-block px-8 py-3 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90"
         >
           資材を探す
         </Link>
@@ -131,7 +131,7 @@ export default function CartPage() {
           </div>
           <button
             onClick={() => setStep("form")}
-            className="w-full py-3 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover"
+            className="w-full py-3 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90"
           >
             発注手続きへ
           </button>
@@ -215,7 +215,7 @@ export default function CartPage() {
             <button
               onClick={handleSubmit}
               disabled={!companyName.trim() || !contactName.trim() || isPending}
-              className="flex-1 py-3 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 py-3 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {isPending ? "送信中..." : "発注する"}
             </button>

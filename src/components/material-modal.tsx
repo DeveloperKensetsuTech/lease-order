@@ -138,7 +138,7 @@ export default function MaterialModal({ material, onClose }: Props) {
           </div>
           <button
             onClick={handleAdd}
-            className="flex-1 h-10 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover transition-colors"
+            className="flex-1 h-10 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             カートに追加
           </button>

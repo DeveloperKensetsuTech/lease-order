@@ -69,7 +69,7 @@ export default function AdminCategoriesView({
         <span className="text-sm text-subtle">{categories.length}件</span>
         <button
           onClick={() => setEditing({ mode: "create" })}
-          className="px-4 py-2 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover transition-colors"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
         >
           + 新規追加
         </button>
@@ -130,9 +130,9 @@ export default function AdminCategoriesView({
       {toastMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px] pointer-events-none">
           <div className="bg-surface rounded-2xl shadow-2xl px-8 py-6 flex flex-col items-center gap-3">
-            <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
               <svg
-                className="h-6 w-6 text-white"
+                className="h-6 w-6 text-primary-foreground"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -338,7 +338,7 @@ function EditModal({
             <button
               type="submit"
               disabled={pending || !name.trim()}
-              className="flex-1 py-2.5 bg-accent text-white rounded-full text-sm font-medium hover:bg-accent-hover disabled:opacity-40"
+              className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 disabled:opacity-40"
             >
               {pending ? "保存中..." : "保存"}
             </button>
