@@ -37,6 +37,12 @@ export default async function AdminOrdersPage({
 
   return (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
+      <Link
+        href="/admin"
+        className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-3"
+      >
+        <span aria-hidden>←</span> 管理画面に戻る
+      </Link>
       <h1 className="text-2xl font-bold text-accent mb-6">発注管理</h1>
 
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">

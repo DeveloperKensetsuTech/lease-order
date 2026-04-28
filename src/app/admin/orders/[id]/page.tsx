@@ -21,18 +21,12 @@ export default async function OrderDetailPage({
 
   return (
     <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-6">
-      {/* パンくず */}
-      <nav className="flex items-center gap-1.5 text-sm text-subtle mb-6">
-        <Link href="/admin" className="hover:text-accent transition-colors">
-          管理
-        </Link>
-        <Chevron />
-        <Link href="/admin/orders" className="hover:text-accent transition-colors">
-          発注管理
-        </Link>
-        <Chevron />
-        <span className="text-accent font-medium">{order.order_number}</span>
-      </nav>
+      <Link
+        href="/admin/orders"
+        className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-6"
+      >
+        <span aria-hidden>←</span> 発注管理に戻る
+      </Link>
 
       {/* ヘッダー */}
       <div className="mb-8">
@@ -247,16 +241,3 @@ function TimelineRow({
   );
 }
 
-function Chevron() {
-  return (
-    <svg
-      className="h-3 w-3"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-    </svg>
-  );
-}

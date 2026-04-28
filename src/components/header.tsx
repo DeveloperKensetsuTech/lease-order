@@ -121,7 +121,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-surface border-b border-border">
       <div className="max-w-6xl mx-auto px-4">
         <div className="h-16 sm:h-20 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+          <Link href={isAdmin ? "/admin" : "/"} className="flex items-center gap-2.5 flex-shrink-0">
             <Image
               src="/images/logo-union.png"
               alt="union"

@@ -30,13 +30,12 @@ function CategoryViewInner({
 
   return (
     <>
-      <nav className="flex items-center gap-1.5 text-sm text-subtle mb-6">
-        <Link href="/" className="hover:text-accent transition-colors">トップ</Link>
-        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
-        <span className="text-accent font-medium">{category.name}</span>
-      </nav>
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-6"
+      >
+        <span aria-hidden>←</span> トップに戻る
+      </Link>
 
       <h1 className="text-2xl font-bold text-accent mb-1">{category.name}</h1>
       <p className="text-sm text-subtle mb-6">{filtered.length}件の資材</p>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import type { Category, Material } from "@/lib/types";
 import {
@@ -67,6 +68,12 @@ export default function AdminMaterialsView({
 
   return (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
+      <Link
+        href="/admin"
+        className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-3"
+      >
+        <span aria-hidden>←</span> 管理画面に戻る
+      </Link>
       <h1 className="text-2xl font-bold text-accent mb-6">資材マスタ</h1>
 
       {/* カテゴリ選択 */}
@@ -185,7 +192,7 @@ export default function AdminMaterialsView({
                   category_id: editing.categoryId,
                   name: "",
                   description: "",
-                  sort_order: filtered.length,
+                  sort_order: (filtered.at(-1)?.sort_order ?? 0) + 1,
                   is_active: true,
                   image_url: null,
                 }

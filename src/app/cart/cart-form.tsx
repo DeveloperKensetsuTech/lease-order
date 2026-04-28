@@ -122,6 +122,12 @@ export default function CartForm({ offices }: Props) {
     <main className="flex-1 max-w-lg mx-auto w-full px-4 py-6">
       {step === "cart" && (
         <>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-3"
+          >
+            <span aria-hidden>←</span> トップに戻る
+          </Link>
           <h1 className="text-2xl font-bold text-accent mb-6">カート</h1>
           <div className="space-y-2 mb-8">
             {items.map((item) => (
@@ -171,6 +177,13 @@ export default function CartForm({ offices }: Props) {
 
       {step === "form" && (
         <>
+          <button
+            type="button"
+            onClick={() => setStep("cart")}
+            className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-3"
+          >
+            <span aria-hidden>←</span> カートに戻る
+          </button>
           <h1 className="text-2xl font-bold text-accent mb-6">発注情報</h1>
           <div className="space-y-4 mb-6">
             <div>
