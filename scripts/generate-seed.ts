@@ -1,4 +1,4 @@
-import { categories, materials } from "./seed-source";
+import { tenantData } from "./seed-source";
 
 const TENANTS = [
   { id: "00000000-0000-0000-0000-000000000001", name: "Union", slug: "union" },
@@ -32,6 +32,12 @@ lines.push(`insert into tenants (id, name, slug) values\n${tenantValues};`);
 lines.push("");
 
 for (const tenant of TENANTS) {
+  const data = tenantData[tenant.slug];
+  if (!data) {
+    throw new Error(`tenantData not defined for slug: ${tenant.slug}`);
+  }
+  const { categories, materials } = data;
+
   lines.push(`-- ==================== tenant: ${tenant.slug} ====================`);
   lines.push("");
 
@@ -59,13 +65,20 @@ for (const tenant of TENANTS) {
   );
   lines.push("");
 
-  lines.push(`-- images (${tenant.slug})`);
   const urlSet = new Set<string>();
   for (const m of materials) {
     if (m.image_url) urlSet.add(m.image_url);
     for (const p of m.catalog_pages || []) urlSet.add(p);
   }
   const urls = Array.from(urlSet).sort();
+
+  if (urls.length === 0) {
+    lines.push(`-- images / material_images (${tenant.slug}): 画像なし`);
+    lines.push("");
+    continue;
+  }
+
+  lines.push(`-- images (${tenant.slug})`);
   const imageValues = urls
     .map((u) => `  ('${tenant.id}', ${sqlString(u)})`)
     .join(",\n");

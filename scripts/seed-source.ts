@@ -1,5 +1,8 @@
 import type { Category, Material } from "../src/lib/types";
 
+// sanshin（三信産業）の実カタログ相当のデータ。
+// union は placeholder（カテゴリA〜L / 資材A-1 等）を `tenantData` で自動生成する。
+
 export const categories: Category[] = [
   { id: "cat-1", name: "仮囲い", slug: "karigakoi", image_url: "/images/materials/0449.jpg", sort_order: 1 },
   { id: "cat-2", name: "保安機材", slug: "hoan-kizai", image_url: "/images/materials/0484.jpg", sort_order: 2 },
@@ -122,4 +125,45 @@ export const materials: Material[] = [
   { id: "m-45", category_id: "cat-12", name: "仮設トイレ", slug: "kasetsu-toilet", image_url: "/images/materials/0453.jpg", description: "仮設トイレユニット", spec: {}, sort_order: 2, is_active: true, catalog_pages: [catalogPage(186), catalogPage(187)] },
   { id: "m-46", category_id: "cat-12", name: "備品", slug: "bihin", image_url: "/images/materials/0450.jpg", description: "現場用備品各種", spec: {}, sort_order: 3, is_active: true, catalog_pages: [catalogPage(188), catalogPage(189), catalogPage(190)] },
 ];
+
+// ===== union用 placeholder データ（sanshin の構造をそのまま複製して名前を差し替え） =====
+
+const catLetter = (i: number) => String.fromCharCode(65 + i); // 0→A, 1→B, ...
+
+const unionCategories: Category[] = categories.map((c, i) => ({
+  id: `union-${c.id}`,
+  name: `カテゴリ${catLetter(i)}`,
+  slug: `cat-${catLetter(i).toLowerCase()}`,
+  image_url: null,
+  sort_order: c.sort_order,
+}));
+
+const unionMaterials: Material[] = (() => {
+  const countByCat = new Map<string, number>();
+  return materials.map((m) => {
+    const catIdx = categories.findIndex((c) => c.id === m.category_id);
+    const L = catLetter(catIdx);
+    const n = (countByCat.get(m.category_id) ?? 0) + 1;
+    countByCat.set(m.category_id, n);
+    return {
+      id: `union-${m.id}`,
+      category_id: `union-${m.category_id}`,
+      name: `資材${L}-${n}`,
+      slug: `mat-${L.toLowerCase()}-${n}`,
+      image_url: null,
+      description: null,
+      spec: {},
+      sort_order: m.sort_order,
+      is_active: m.is_active,
+      catalog_pages: [],
+    };
+  });
+})();
+
+export type TenantData = { categories: Category[]; materials: Material[] };
+
+export const tenantData: Record<string, TenantData> = {
+  sanshin: { categories, materials },
+  union: { categories: unionCategories, materials: unionMaterials },
+};
 
