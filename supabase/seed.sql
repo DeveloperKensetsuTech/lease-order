@@ -9,6 +9,10 @@ insert into tenants (id, name, slug) values
   ('00000000-0000-0000-0000-000000000001', 'Union', 'union'),
   ('00000000-0000-0000-0000-000000000002', '三信産業', 'sanshin');
 
+-- admin_users (allowlist for /admin sign-in)
+insert into admin_users (tenant_id, email) values
+  ('00000000-0000-0000-0000-000000000001', 'admin@kensetsu-tech.com');
+
 -- ==================== tenant: union ====================
 
 -- categories (union)
