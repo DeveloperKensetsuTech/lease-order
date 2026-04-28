@@ -1,11 +1,32 @@
 import "server-only";
 import { cache } from "react";
+import { headers } from "next/headers";
 import { supabaseAdmin } from "./supabase-admin";
 
-export const getTenantId = cache(async (): Promise<string> => {
-  const slug = process.env.TENANT_SLUG;
-  if (!slug) throw new Error("TENANT_SLUG env var is required");
+const PRODUCT_DOMAIN = "lease-order.kensetsu-tech.com";
+const FALLBACK_SLUG = "union";
 
+function extractSlugFromHost(rawHost: string): string | null {
+  const host = rawHost.split(":")[0].toLowerCase();
+  const noStaging = host.startsWith("staging.") ? host.slice("staging.".length) : host;
+  if (noStaging === PRODUCT_DOMAIN) return FALLBACK_SLUG;
+  const suffix = "." + PRODUCT_DOMAIN;
+  if (noStaging.endsWith(suffix)) return noStaging.slice(0, -suffix.length);
+  return null;
+}
+
+async function resolveSlug(): Promise<string> {
+  if (process.env.TENANT_SLUG) return process.env.TENANT_SLUG;
+  const host = (await headers()).get("host");
+  if (host) {
+    const slug = extractSlugFromHost(host);
+    if (slug) return slug;
+  }
+  return FALLBACK_SLUG;
+}
+
+export const getTenantId = cache(async (): Promise<string> => {
+  const slug = await resolveSlug();
   const { data, error } = await supabaseAdmin
     .from("tenants")
     .select("id")
