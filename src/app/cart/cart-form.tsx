@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
 import type { DeliveryMethod, Office } from "@/lib/types";
 import { submitOrder } from "./actions";
+import AddressAutocomplete from "./address-autocomplete";
 
 type Props = { offices: Office[] };
 
@@ -255,12 +256,10 @@ export default function CartForm({ offices }: Props) {
                 <label className="block text-sm font-medium text-foreground mb-1.5">
                   現場住所 <span className="text-red-500">*</span>
                 </label>
-                <textarea
+                <AddressAutocomplete
                   value={deliveryAddress}
-                  onChange={(e) => setDeliveryAddress(e.target.value)}
-                  rows={2}
+                  onChange={setDeliveryAddress}
                   placeholder="例: 大分県大分市新貝6番7号"
-                  className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
                 />
               </div>
             )}
