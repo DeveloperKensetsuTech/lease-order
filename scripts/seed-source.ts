@@ -1,4 +1,4 @@
-import type { Category, Material } from "../src/lib/types";
+import type { Category, Material, Office } from "../src/lib/types";
 
 // sanshin（三信産業）の実カタログ相当のデータ。
 // union は placeholder（カテゴリA〜L / 資材A-1 等）を `tenantData` で自動生成する。
@@ -126,6 +126,27 @@ export const materials: Material[] = [
   { id: "m-46", category_id: "cat-12", name: "備品", slug: "bihin", image_url: "/images/materials/0450.jpg", description: "現場用備品各種", spec: {}, sort_order: 3, is_active: true, catalog_pages: [catalogPage(188), catalogPage(189), catalogPage(190)] },
 ];
 
+export const offices: Office[] = [
+  { id: "office-1", name: "本社", area: "大分", address: "大分県大分市新貝6番7号", phone: "097-552-1015", fax: "097-552-1310", sort_order: 1, is_active: true },
+  { id: "office-2", name: "大分支店・機材センター", area: "大分", address: "大分県大分市大字上戸次3681", phone: "097-597-2381", fax: "097-597-4522", sort_order: 2, is_active: true },
+  { id: "office-3", name: "大分中央営業所・機材センター", area: "大分", address: "大分県大分市向原沖1丁目2番2号", phone: "097-551-3478", fax: "097-552-5560", sort_order: 3, is_active: true },
+  { id: "office-4", name: "日本製鉄構内営業所・機材センター", area: "大分", address: "大分県大分市大字西ノ州1", phone: "097-556-3490", fax: "097-556-3491", sort_order: 4, is_active: true },
+  { id: "office-5", name: "中津営業所・機材センター", area: "大分", address: "大分県中津市大字植野463", phone: "0979-32-4131", fax: "0979-32-4258", sort_order: 5, is_active: true },
+  { id: "office-6", name: "日田営業所・機材センター", area: "大分", address: "大分県日田市北友田2丁目2406-1", phone: "0973-22-5796", fax: "0973-22-5797", sort_order: 6, is_active: true },
+  { id: "office-7", name: "竹田営業所・機材センター", area: "大分", address: "大分県竹田市飛田川2239-5", phone: "0974-63-2814", fax: "0974-63-2815", sort_order: 7, is_active: true },
+  { id: "office-8", name: "佐伯営業所・機材センター", area: "大分", address: "大分県佐伯市大字上岡1551-1", phone: "0972-24-0289", fax: "0972-23-7563", sort_order: 8, is_active: true },
+  { id: "office-9", name: "臼杵営業所・機材センター", area: "大分", address: "大分県臼杵市大字井村1283番地の1", phone: "0972-64-0421", fax: "0972-64-0422", sort_order: 9, is_active: true },
+  { id: "office-10", name: "日出営業所・機材センター", area: "大分", address: "大分県速見郡日出町大字大神9656-10", phone: "0977-28-0108", fax: "0977-28-0107", sort_order: 10, is_active: true },
+  { id: "office-11", name: "福岡支店・機材センター", area: "福岡", address: "福岡県粕屋郡篠栗町大字和田405番地", phone: "092-947-1490", fax: "092-947-1294", sort_order: 11, is_active: true },
+  { id: "office-12", name: "小倉営業所・機材センター", area: "福岡", address: "福岡県北九州市小倉南区大字長野971-1", phone: "093-472-6540", fax: "093-472-6742", sort_order: 12, is_active: true },
+  { id: "office-13", name: "八幡営業所・機材センター", area: "福岡", address: "福岡県北九州市八幡西区洞北町4-5", phone: "093-691-3411", fax: "093-691-3412", sort_order: 13, is_active: true },
+  { id: "office-14", name: "筑豊営業所・機材センター", area: "福岡", address: "福岡県田川郡福智町赤池474-95", phone: "0947-28-3981", fax: "0947-28-3980", sort_order: 14, is_active: true },
+  { id: "office-15", name: "山口支店・機材センター", area: "山口", address: "山口県下松市大字山田字田中142-1", phone: "0833-47-0808", fax: "0833-46-3034", sort_order: 15, is_active: true },
+  { id: "office-16", name: "下関営業所・機材センター", area: "山口", address: "山口県下関市大字形山91番", phone: "083-263-3596", fax: "083-263-3597", sort_order: 16, is_active: true },
+  { id: "office-17", name: "宇部営業所・機材センター", area: "山口", address: "山口県宇部市大字船木14-11", phone: "0836-67-3439", fax: "0836-67-3438", sort_order: 17, is_active: true },
+  { id: "office-18", name: "岩国営業所・機材センター", area: "山口", address: "山口県岩国市日の出町2343番地1", phone: "0827-88-4432", fax: "0827-88-4448", sort_order: 18, is_active: true },
+];
+
 // ===== union用 placeholder データ（sanshin の構造をそのまま複製して名前を差し替え） =====
 
 const catLetter = (i: number) => String.fromCharCode(65 + i); // 0→A, 1→B, ...
@@ -160,10 +181,20 @@ const unionMaterials: Material[] = (() => {
   });
 })();
 
-export type TenantData = { categories: Category[]; materials: Material[] };
+const unionOffices: Office[] = [
+  { id: "union-office-1", name: "本社", area: null, address: null, phone: null, fax: null, sort_order: 1, is_active: true },
+  { id: "union-office-2", name: "営業所A", area: null, address: null, phone: null, fax: null, sort_order: 2, is_active: true },
+  { id: "union-office-3", name: "営業所B", area: null, address: null, phone: null, fax: null, sort_order: 3, is_active: true },
+];
+
+export type TenantData = {
+  categories: Category[];
+  materials: Material[];
+  offices: Office[];
+};
 
 export const tenantData: Record<string, TenantData> = {
-  sanshin: { categories, materials },
-  union: { categories: unionCategories, materials: unionMaterials },
+  sanshin: { categories, materials, offices },
+  union: { categories: unionCategories, materials: unionMaterials, offices: unionOffices },
 };
 

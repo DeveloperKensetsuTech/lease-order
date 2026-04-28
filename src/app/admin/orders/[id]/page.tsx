@@ -106,6 +106,44 @@ export default async function OrderDetailPage({
         )}
       </section>
 
+      {/* 配送・リース情報 */}
+      <section className="mb-8">
+        <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider mb-3">
+          配送・リース情報
+        </h2>
+        <div className="bg-surface rounded-xl border border-border p-4 space-y-2">
+          <Row
+            label="受取方法"
+            value={order.delivery_method === "delivery" ? "配送" : "引取"}
+          />
+          {order.delivery_method === "delivery" && order.delivery_address && (
+            <div className="flex justify-between text-sm gap-3">
+              <span className="text-muted flex-shrink-0">現場住所</span>
+              <span className="text-accent font-medium text-right whitespace-pre-wrap">
+                {order.delivery_address}
+              </span>
+            </div>
+          )}
+          {order.delivery_method === "pickup" && order.pickup_office && (
+            <div className="flex justify-between text-sm gap-3">
+              <span className="text-muted flex-shrink-0">引取営業所</span>
+              <span className="text-accent font-medium text-right">
+                {order.pickup_office.name}
+                {order.pickup_office.address && (
+                  <span className="block text-xs text-subtle font-normal mt-0.5">
+                    {order.pickup_office.address}
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
+          <Row
+            label="リース期間"
+            value={formatLeasePeriod(order.lease_start_date, order.lease_end_date)}
+          />
+        </div>
+      </section>
+
       {/* 注文明細 */}
       <section className="mb-8">
         <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider mb-3">
@@ -165,6 +203,17 @@ export default async function OrderDetailPage({
       </section>
     </main>
   );
+}
+
+function formatLeasePeriod(
+  start: string | null,
+  end: string | null
+): string {
+  const fmt = (d: string) => new Date(d).toLocaleDateString("ja-JP");
+  if (start && end) return `${fmt(start)} ～ ${fmt(end)}`;
+  if (start) return `${fmt(start)} ～`;
+  if (end) return `～ ${fmt(end)}`;
+  return "—";
 }
 
 function Row({ label, value }: { label: string; value: string }) {

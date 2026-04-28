@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { supabaseAdmin } from "./supabase-admin";
 import { getTenantId } from "./tenant";
-import type { Category, Material } from "./types";
+import type { Category, DeliveryMethod, Material } from "./types";
 
 export type AdminCategoryRow = Category & { material_count: number };
 
@@ -105,6 +105,14 @@ export type OrderItemRow = {
   approved_quantity: number | null;
 };
 
+export type OrderPickupOffice = {
+  id: string;
+  name: string;
+  area: string | null;
+  address: string | null;
+  phone: string | null;
+};
+
 export type OrderDetail = {
   id: string;
   order_number: string;
@@ -113,6 +121,11 @@ export type OrderDetail = {
   phone: string | null;
   email: string | null;
   note: string | null;
+  delivery_method: DeliveryMethod;
+  delivery_address: string | null;
+  lease_start_date: string | null;
+  lease_end_date: string | null;
+  pickup_office: OrderPickupOffice | null;
   status: OrderStatus;
   approved_at: string | null;
   approved_by: string | null;
@@ -176,6 +189,11 @@ type OrderDetailRaw = {
   phone: string | null;
   email: string | null;
   note: string | null;
+  delivery_method: DeliveryMethod;
+  delivery_address: string | null;
+  lease_start_date: string | null;
+  lease_end_date: string | null;
+  pickup_office_id: string | null;
   status: OrderStatus;
   approved_at: string | null;
   approved_by: string | null;
@@ -185,6 +203,9 @@ type OrderDetailRaw = {
   completed_at: string | null;
   created_at: string;
   order_items: (OrderItemRow & { created_at: string })[] | null;
+  offices:
+    | { id: string; name: string; area: string | null; address: string | null; phone: string | null }
+    | null;
 };
 
 export const getOrder = cache(async (id: string): Promise<OrderDetail | null> => {
@@ -192,7 +213,7 @@ export const getOrder = cache(async (id: string): Promise<OrderDetail | null> =>
   const { data, error } = await supabaseAdmin
     .from("orders")
     .select(
-      "id, order_number, company_name, contact_name, phone, email, note, status, approved_at, approved_by, reject_reason, rejected_at, shipped_at, completed_at, created_at, order_items(id, material_id, variant_id, material_name, variant_name, quantity, approved_quantity, created_at)"
+      "id, order_number, company_name, contact_name, phone, email, note, delivery_method, delivery_address, lease_start_date, lease_end_date, pickup_office_id, status, approved_at, approved_by, reject_reason, rejected_at, shipped_at, completed_at, created_at, order_items(id, material_id, variant_id, material_name, variant_name, quantity, approved_quantity, created_at), offices:pickup_office_id(id, name, area, address, phone)"
     )
     .eq("tenant_id", tenantId)
     .eq("id", id)
@@ -223,6 +244,11 @@ export const getOrder = cache(async (id: string): Promise<OrderDetail | null> =>
     phone: raw.phone,
     email: raw.email,
     note: raw.note,
+    delivery_method: raw.delivery_method,
+    delivery_address: raw.delivery_address,
+    lease_start_date: raw.lease_start_date,
+    lease_end_date: raw.lease_end_date,
+    pickup_office: raw.offices ?? null,
     status: raw.status,
     approved_at: raw.approved_at,
     approved_by: raw.approved_by,
