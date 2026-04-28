@@ -137,28 +137,30 @@ export default function Header() {
             <SearchBar className="flex-1 max-w-md hidden sm:block" />
           )}
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/cart"
-              className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-muted transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-foreground"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.5}
+          {!isAdmin && (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/cart"
+                className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-muted transition-colors"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-              {totalItems > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-[18px] min-w-[18px] flex items-center justify-center px-1">
-                  {totalItems}
-                </span>
-              )}
-            </Link>
-          </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                {totalItems > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full h-[18px] min-w-[18px] flex items-center justify-center px-1">
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+            </div>
+          )}
         </div>
 
         {!isAdmin && (

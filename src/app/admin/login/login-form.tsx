@@ -38,19 +38,34 @@ export default function LoginForm({ next }: { next?: string }) {
 
   if (status === "sent") {
     return (
-      <div className="text-sm text-foreground">
-        <p className="mb-2 font-medium">メールを送信しました。</p>
-        <p className="text-subtle">
-          {email} 宛のログインリンクを開いてください。届かない場合は迷惑メールフォルダもご確認ください。
+      <div className="flex flex-col items-center text-center py-2">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 mb-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <p className="text-sm font-semibold text-foreground mb-1">メールを送信しました</p>
+        <p className="text-sm text-muted leading-relaxed">
+          <span className="font-medium text-foreground">{email}</span> 宛のログインリンクを開いてください。
+        </p>
+        <p className="text-xs text-subtle mt-3">
+          届かない場合は迷惑メールフォルダもご確認ください。
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-5">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
+        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
           メールアドレス
         </label>
         <input
@@ -61,16 +76,19 @@ export default function LoginForm({ next }: { next?: string }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
-          className="w-full px-3 py-2 border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+          placeholder="you@example.com"
+          className="w-full h-11 px-3.5 bg-surface border border-border-strong rounded-md text-sm text-foreground placeholder:text-subtle focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors"
         />
       </div>
+
       {errorMessage && (
-        <p className="text-sm text-red-700">{errorMessage}</p>
+        <p className="text-sm text-rose-700">{errorMessage}</p>
       )}
+
       <button
         type="submit"
-        disabled={status === "sending"}
-        className="w-full bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium disabled:opacity-60"
+        disabled={status === "sending" || !email}
+        className="w-full h-11 bg-accent text-white rounded-md text-sm font-semibold tracking-wide hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {status === "sending" ? "送信中…" : "ログインリンクを送信"}
       </button>
