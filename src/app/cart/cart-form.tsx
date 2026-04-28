@@ -33,6 +33,7 @@ export default function CartForm({ offices }: Props) {
   const areaOrder = Array.from(
     new Set(offices.map((o) => o.area ?? "その他"))
   );
+  const selectedOffice = offices.find((o) => o.id === pickupOfficeId);
 
   const isFormValid = (() => {
     if (!companyName.trim() || !contactName.trim()) return false;
@@ -185,46 +186,47 @@ export default function CartForm({ offices }: Props) {
           >
             <span aria-hidden>←</span> カートに戻る
           </button>
-          <h1 className="text-2xl font-bold text-accent mb-6">発注情報</h1>
-          <div className="space-y-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                会社名 <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                担当者名 <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                電話番号
-              </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
-              />
-            </div>
+          <h1 className="text-2xl font-bold text-accent mb-8">発注情報</h1>
+          <div className="space-y-10 mb-10">
+            <section className="space-y-5">
+              <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider">顧客情報</h2>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  会社名 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  担当者名 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  電話番号
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
+                />
+              </div>
+            </section>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                受取方法 <span className="text-red-500">*</span>
-              </label>
+            <section className="space-y-5">
+              <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider">受取方法</h2>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -249,90 +251,111 @@ export default function CartForm({ offices }: Props) {
                   引取
                 </button>
               </div>
-            </div>
 
-            {deliveryMethod === "delivery" && (
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  現場住所 <span className="text-red-500">*</span>
-                </label>
-                <AddressAutocomplete
-                  value={deliveryAddress}
-                  onChange={setDeliveryAddress}
-                  placeholder="例: 大分県大分市新貝6番7号"
-                />
-              </div>
-            )}
+              {deliveryMethod === "delivery" && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    現場住所 <span className="text-red-500">*</span>
+                  </label>
+                  <AddressAutocomplete
+                    value={deliveryAddress}
+                    onChange={setDeliveryAddress}
+                    placeholder="例: 大分県大分市新貝6番7号"
+                  />
+                </div>
+              )}
 
-            {deliveryMethod === "pickup" && (
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  引取営業所 <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={pickupOfficeId}
-                  onChange={(e) => setPickupOfficeId(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
-                >
-                  <option value="">営業所を選択</option>
-                  {areaOrder.map((area) => (
-                    <optgroup key={area} label={area}>
-                      {officesByArea[area].map((o) => (
-                        <option key={o.id} value={o.id}>
-                          {o.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
-            )}
+              {deliveryMethod === "pickup" && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    引取営業所 <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={pickupOfficeId}
+                    onChange={(e) => setPickupOfficeId(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
+                  >
+                    <option value="">営業所を選択</option>
+                    {areaOrder.map((area) => (
+                      <optgroup key={area} label={area}>
+                        {officesByArea[area].map((o) => (
+                          <option key={o.id} value={o.id}>
+                            {o.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                  {selectedOffice?.address && (
+                    <div className="mt-3 p-3 bg-surface-muted rounded-lg space-y-2">
+                      <p className="text-sm text-foreground leading-relaxed">
+                        {selectedOffice.address}
+                      </p>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedOffice.address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover transition-colors"
+                      >
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                          <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        Google Maps で開く
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  リース開始日 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={leaseStartDate}
-                  onChange={(e) => setLeaseStartDate(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
-                />
+            <section className="space-y-5">
+              <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider">リース期間</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    開始日 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={leaseStartDate}
+                    onChange={(e) => setLeaseStartDate(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    終了日 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={leaseEndDate}
+                    min={leaseStartDate || undefined}
+                    onChange={(e) => setLeaseEndDate(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  リース終了日 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={leaseEndDate}
-                  min={leaseStartDate || undefined}
-                  onChange={(e) => setLeaseEndDate(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
-                />
-              </div>
-            </div>
-            <p className="text-xs text-subtle -mt-2">
-              {deliveryMethod === "delivery"
-                ? "開始日に現場へお届けします。"
-                : "開始日に営業所でお引き渡しします。"}
-            </p>
+              <p className="text-xs text-subtle">
+                {deliveryMethod === "delivery"
+                  ? "開始日に現場へお届けします。"
+                  : "開始日に営業所でお引き渡しします。"}
+              </p>
+            </section>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                備考
-              </label>
+            <section className="space-y-5">
+              <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider">備考</h2>
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={3}
+                placeholder="ご要望やご質問があればこちらへ"
                 className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
               />
-            </div>
+            </section>
           </div>
 
-          <div className="bg-surface-muted rounded-xl p-4 mb-6">
+          <div className="bg-surface-muted rounded-xl p-5 mb-8">
             <h3 className="text-xs font-semibold text-subtle uppercase tracking-wider mb-3">注文内容</h3>
             {items.map((item) => (
               <div key={item.material.id} className="flex justify-between text-sm py-1">
