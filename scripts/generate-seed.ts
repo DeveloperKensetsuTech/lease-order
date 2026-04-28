@@ -36,9 +36,25 @@ for (const tenant of TENANTS) {
   if (!data) {
     throw new Error(`tenantData not defined for slug: ${tenant.slug}`);
   }
-  const { categories, materials } = data;
+  const { categories, materials, offices } = data;
 
   lines.push(`-- ==================== tenant: ${tenant.slug} ====================`);
+  lines.push("");
+
+  lines.push(`-- offices (${tenant.slug})`);
+  if (offices.length === 0) {
+    lines.push("-- (none)");
+  } else {
+    const officeValues = offices
+      .map(
+        (o) =>
+          `  ('${tenant.id}', ${sqlString(o.name)}, ${sqlString(o.area)}, ${sqlString(o.address)}, ${sqlString(o.phone)}, ${sqlString(o.fax)}, ${o.sort_order}, ${o.is_active})`
+      )
+      .join(",\n");
+    lines.push(
+      `insert into offices (tenant_id, name, area, address, phone, fax, sort_order, is_active) values\n${officeValues};`
+    );
+  }
   lines.push("");
 
   lines.push(`-- categories (${tenant.slug})`);

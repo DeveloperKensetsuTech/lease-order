@@ -19,6 +19,19 @@ export type Material = {
   catalog_pages?: string[];
 };
 
+export type Office = {
+  id: string;
+  name: string;
+  area: string | null;
+  address: string | null;
+  phone: string | null;
+  fax: string | null;
+  sort_order: number;
+  is_active: boolean;
+};
+
+export type DeliveryMethod = "delivery" | "pickup";
+
 export type Order = {
   id: string;
   order_number: string;
@@ -27,6 +40,11 @@ export type Order = {
   phone: string | null;
   email: string | null;
   note: string | null;
+  delivery_method: DeliveryMethod;
+  delivery_address: string | null;
+  lease_start_date: string | null;
+  lease_end_date: string | null;
+  pickup_office_id: string | null;
   status: "pending" | "confirmed" | "shipped" | "completed" | "cancelled";
   created_at: string;
 };

@@ -2,18 +2,26 @@
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getTenantId } from "@/lib/tenant";
+import type { DeliveryMethod } from "@/lib/types";
 
 type SubmitOrderInput = {
   companyName: string;
   contactName: string;
   phone: string;
   note: string;
+  deliveryMethod: DeliveryMethod;
+  deliveryAddress: string;
+  pickupOfficeId: string;
+  leaseStartDate: string;
+  leaseEndDate: string;
   items: { materialId: string; quantity: number }[];
 };
 
 export type SubmitOrderResult =
   | { ok: true; orderNumber: string }
   | { ok: false; error: string };
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function submitOrder(
   input: SubmitOrderInput
@@ -25,6 +33,27 @@ export async function submitOrder(
   if (!contactName) return { ok: false, error: "担当者名を入力してください" };
   if (!input.items.length) return { ok: false, error: "カートが空です" };
 
+  if (input.deliveryMethod !== "delivery" && input.deliveryMethod !== "pickup") {
+    return { ok: false, error: "受取方法を選択してください" };
+  }
+
+  if (!ISO_DATE.test(input.leaseStartDate) || !ISO_DATE.test(input.leaseEndDate)) {
+    return { ok: false, error: "リース期間を入力してください" };
+  }
+  if (input.leaseEndDate < input.leaseStartDate) {
+    return { ok: false, error: "リース終了日は開始日以降の日付を指定してください" };
+  }
+
+  const deliveryAddress = input.deliveryAddress.trim();
+  const pickupOfficeId = input.pickupOfficeId.trim();
+
+  if (input.deliveryMethod === "delivery" && !deliveryAddress) {
+    return { ok: false, error: "現場住所を入力してください" };
+  }
+  if (input.deliveryMethod === "pickup" && !pickupOfficeId) {
+    return { ok: false, error: "引取営業所を選択してください" };
+  }
+
   const items = input.items
     .map((i) => ({
       materialId: String(i.materialId),
@@ -35,6 +64,21 @@ export async function submitOrder(
   if (!items.length) return { ok: false, error: "有効な明細がありません" };
 
   const tenantId = await getTenantId();
+
+  if (input.deliveryMethod === "pickup") {
+    const { data: office, error: officeErr } = await supabaseAdmin
+      .from("offices")
+      .select("id")
+      .eq("tenant_id", tenantId)
+      .eq("id", pickupOfficeId)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (officeErr) {
+      console.error("submitOrder: office lookup failed", officeErr);
+      return { ok: false, error: "発注の登録に失敗しました" };
+    }
+    if (!office) return { ok: false, error: "選択された営業所が見つかりません" };
+  }
 
   const { data: materials, error: matErr } = await supabaseAdmin
     .from("materials")
@@ -67,6 +111,13 @@ export async function submitOrder(
       contact_name: contactName,
       phone: input.phone.trim() || null,
       note: input.note.trim() || null,
+      delivery_method: input.deliveryMethod,
+      delivery_address:
+        input.deliveryMethod === "delivery" ? deliveryAddress : null,
+      pickup_office_id:
+        input.deliveryMethod === "pickup" ? pickupOfficeId : null,
+      lease_start_date: input.leaseStartDate,
+      lease_end_date: input.leaseEndDate,
       status: "pending",
     })
     .select("id")

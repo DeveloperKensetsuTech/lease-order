@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { supabase } from "./supabase";
 import { getTenantId } from "./tenant";
-import { Category, Material } from "./types";
+import { Category, Material, Office } from "./types";
 
 type MaterialImageJoin = {
   sort_order: number;
@@ -63,6 +63,18 @@ export const getAllMaterials = cache(async (): Promise<Material[]> => {
     .order("sort_order");
   if (error) throw error;
   return (data ?? []).map((row) => mapMaterial(row as unknown as MaterialRow));
+});
+
+export const getOffices = cache(async (): Promise<Office[]> => {
+  const tenantId = await getTenantId();
+  const { data, error } = await supabase
+    .from("offices")
+    .select("id, name, area, address, phone, fax, sort_order, is_active")
+    .eq("tenant_id", tenantId)
+    .eq("is_active", true)
+    .order("sort_order");
+  if (error) throw error;
+  return data ?? [];
 });
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
