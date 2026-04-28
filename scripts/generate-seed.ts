@@ -5,6 +5,10 @@ const TENANTS = [
   { id: "00000000-0000-0000-0000-000000000002", name: "三信産業", slug: "sanshin" },
 ];
 
+const ADMIN_USERS: { tenant_slug: string; email: string }[] = [
+  { tenant_slug: "union", email: "admin@kensetsu-tech.com" },
+];
+
 function sqlString(s: string | null | undefined): string {
   if (s === null || s === undefined) return "null";
   return "'" + s.replace(/'/g, "''") + "'";
@@ -29,6 +33,15 @@ const tenantValues = TENANTS.map(
   (t) => `  ('${t.id}', ${sqlString(t.name)}, ${sqlString(t.slug)})`
 ).join(",\n");
 lines.push(`insert into tenants (id, name, slug) values\n${tenantValues};`);
+lines.push("");
+
+lines.push("-- admin_users (allowlist for /admin sign-in)");
+const adminValues = ADMIN_USERS.map((a) => {
+  const tenant = TENANTS.find((t) => t.slug === a.tenant_slug);
+  if (!tenant) throw new Error(`unknown tenant slug for admin: ${a.tenant_slug}`);
+  return `  ('${tenant.id}', ${sqlString(a.email)})`;
+}).join(",\n");
+lines.push(`insert into admin_users (tenant_id, email) values\n${adminValues};`);
 lines.push("");
 
 for (const tenant of TENANTS) {

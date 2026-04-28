@@ -46,5 +46,6 @@
 - [x] テナント解決を ENV 駆動に（`TENANT_SLUG` → `tenants.slug` → UUID。`src/lib/tenant.ts`）
 - [x] seed.sql に 2 tenant 投入（`union` = デモ汎用 / `sanshin` = 三信産業）
 - [x] カテゴリ CRUD 管理画面（`/admin/categories`）
-- [ ] 管理画面（/admin）に Supabase Auth（マジックリンク）認証を追加（middleware で保護）
-- [ ] テナント別サブドメインルーティングの実装（middleware で Host → tenant_id 判定）。現状は `TENANT_SLUG` 環境変数で切替（Vercel Preview/Production で設定）
+- [x] 管理画面（/admin）に Supabase Auth マジックリンク認証を追加（`src/proxy.ts` で保護 + `admin_users` 許可リスト）
+- [ ] Supabase ダッシュボードで Email プロバイダ有効化 + Site URL / Redirect URL 設定（staging / prod）
+- [ ] テナント別サブドメインルーティングの実装（proxy.ts で Host → tenant_id 判定）。現状は `TENANT_SLUG` 環境変数で切替（Vercel Preview/Production で設定）

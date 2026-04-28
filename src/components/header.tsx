@@ -6,6 +6,7 @@ import { useCart } from "@/lib/cart-context";
 import { useCatalog } from "@/lib/catalog-context";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect, useMemo } from "react";
+import { signOut } from "@/app/admin/auth-actions";
 
 function SearchBar({ className }: { className?: string }) {
   const { materials, categories } = useCatalog();
@@ -116,6 +117,8 @@ export default function Header() {
   const { totalItems } = useCart();
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
+  const isAdminAuthPage =
+    pathname === "/admin/login" || pathname.startsWith("/admin/auth");
 
   return (
     <header className="sticky top-0 z-50 bg-surface border-b border-border">
@@ -138,15 +141,17 @@ export default function Header() {
           )}
 
           <div className="flex items-center gap-3">
-            {!isAdmin && (
-              <Link href="/admin" className="text-xs text-subtle hover:text-foreground">
-                管理
-              </Link>
-            )}
             {isAdmin && (
               <Link href="/" className="text-xs text-subtle hover:text-foreground">
                 発注画面
               </Link>
+            )}
+            {isAdmin && !isAdminAuthPage && (
+              <form action={signOut}>
+                <button type="submit" className="text-xs text-subtle hover:text-foreground">
+                  ログアウト
+                </button>
+              </form>
             )}
             <Link
               href="/cart"
