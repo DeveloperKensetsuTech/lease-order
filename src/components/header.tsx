@@ -20,7 +20,7 @@ function SearchBar({ className }: { className?: string }) {
     return materials
       .filter((m) => m.is_active && m.name.toLowerCase().includes(q))
       .slice(0, 8);
-  }, [query]);
+  }, [query, materials]);
 
   const getCategoryName = (categoryId: string) =>
     categories.find((c) => c.id === categoryId)?.name || "";
