@@ -118,11 +118,11 @@ for (const tenant of TENANTS) {
   const materialValues = materials
     .map((m) => {
       const catSlug = categories.find((c) => c.id === m.category_id)?.slug;
-      return `  ('${tenant.id}', (select id from categories where tenant_id='${tenant.id}' and slug=${sqlString(catSlug!)}), ${sqlString(m.name)}, ${sqlString(m.slug)}, ${sqlString(m.description)}, ${sqlJsonb(m.spec)}, ${m.sort_order}, ${m.is_active})`;
+      return `  ('${tenant.id}', (select id from categories where tenant_id='${tenant.id}' and slug=${sqlString(catSlug!)}), ${sqlString(m.name)}, ${sqlString(m.description)}, ${sqlJsonb(m.spec)}, ${m.sort_order}, ${m.is_active})`;
     })
     .join(",\n");
   lines.push(
-    `insert into materials (tenant_id, category_id, name, slug, description, spec, sort_order, is_active) values\n${materialValues};`
+    `insert into materials (tenant_id, category_id, name, description, spec, sort_order, is_active) values\n${materialValues};`
   );
   lines.push("");
 
@@ -148,18 +148,22 @@ for (const tenant of TENANTS) {
 
   lines.push(`-- material_images (${tenant.slug})`);
   type MILink = {
-    slug: string;
+    name: string;
+    category_slug: string;
     url: string;
     sort_order: number;
     is_primary: boolean;
   };
   const miLinks: MILink[] = [];
   for (const m of materials) {
+    const catSlug = categories.find((c) => c.id === m.category_id)?.slug;
+    if (!catSlug) continue;
     const seen = new Set<string>();
     let order = 0;
     if (m.image_url) {
       miLinks.push({
-        slug: m.slug,
+        name: m.name,
+        category_slug: catSlug,
         url: m.image_url,
         sort_order: order++,
         is_primary: true,
@@ -168,22 +172,29 @@ for (const tenant of TENANTS) {
     }
     for (const p of m.catalog_pages || []) {
       if (seen.has(p)) continue;
-      miLinks.push({ slug: m.slug, url: p, sort_order: order++, is_primary: false });
+      miLinks.push({
+        name: m.name,
+        category_slug: catSlug,
+        url: p,
+        sort_order: order++,
+        is_primary: false,
+      });
       seen.add(p);
     }
   }
   const miValues = miLinks
     .map(
       (l) =>
-        `  (${sqlString(l.slug)}, ${sqlString(l.url)}, ${l.sort_order}, ${l.is_primary})`
+        `  (${sqlString(l.name)}, ${sqlString(l.category_slug)}, ${sqlString(l.url)}, ${l.sort_order}, ${l.is_primary})`
     )
     .join(",\n");
   lines.push(`insert into material_images (material_id, image_id, sort_order, is_primary)
 select m.id, i.id, v.sort_order, v.is_primary
 from (values
 ${miValues}
-) as v(material_slug, image_url, sort_order, is_primary)
-join materials m on m.tenant_id='${tenant.id}' and m.slug = v.material_slug
+) as v(material_name, category_slug, image_url, sort_order, is_primary)
+join categories c on c.tenant_id='${tenant.id}' and c.slug = v.category_slug
+join materials m on m.tenant_id='${tenant.id}' and m.category_id = c.id and m.name = v.material_name
 join images i on i.tenant_id='${tenant.id}' and i.url = v.image_url;`);
   lines.push("");
 }

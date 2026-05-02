@@ -1,4 +1,36 @@
-import type { Category, Material, Office } from "../src/lib/types";
+// Seed-source uses local types so it can keep `slug` as a join key for the
+// generator even though the runtime `Material` type no longer has slug.
+type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  sort_order: number;
+};
+
+type Material = {
+  id: string;
+  category_id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  description: string | null;
+  spec: Record<string, string>;
+  sort_order: number;
+  is_active: boolean;
+  catalog_pages?: string[];
+};
+
+type Office = {
+  id: string;
+  name: string;
+  area: string | null;
+  address: string | null;
+  phone: string | null;
+  fax: string | null;
+  sort_order: number;
+  is_active: boolean;
+};
 
 // sanshin（三信産業）の実カタログ相当のデータ。
 // union は placeholder（カテゴリA〜L / 資材A-1 等）を `tenantData` で自動生成する。

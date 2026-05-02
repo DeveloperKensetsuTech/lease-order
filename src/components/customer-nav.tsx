@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTransition } from "react";
-import { logout } from "@/app/login/actions";
+import { logout } from "@/app/(public)/login/actions";
 
 type CustomerSummary = { id: string; company_id: string; name: string };
 

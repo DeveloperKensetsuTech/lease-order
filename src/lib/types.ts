@@ -10,13 +10,23 @@ export type Material = {
   id: string;
   category_id: string;
   name: string;
-  slug: string;
   image_url: string | null;
   description: string | null;
   spec: Record<string, string> | null;
   sort_order: number;
   is_active: boolean;
   catalog_pages?: string[];
+};
+
+export type MaterialVariant = {
+  id: string;
+  material_id: string;
+  name: string;
+  unit: string | null;
+  sku: string | null;
+  spec: Record<string, string> | null;
+  sort_order: number;
+  is_active: boolean;
 };
 
 export type Office = {

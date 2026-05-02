@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useTransition } from "react";
 import type { AdminCategoryRow } from "@/lib/admin-data";
 import {
@@ -64,12 +63,6 @@ export default function AdminCategoriesView({
 
   return (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
-      <Link
-        href="/admin"
-        className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-3"
-      >
-        <span aria-hidden>←</span> 管理画面に戻る
-      </Link>
       <h1 className="text-2xl font-bold text-accent mb-6">カテゴリマスタ</h1>
 
       <div className="flex items-center justify-between mb-4">

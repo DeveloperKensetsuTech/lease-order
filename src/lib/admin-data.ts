@@ -1,7 +1,13 @@
 import { cache } from "react";
 import { supabaseAdmin } from "./supabase-admin";
 import { getTenantId } from "./tenant";
-import type { Category, DeliveryMethod, Material } from "./types";
+import type {
+  Category,
+  DeliveryMethod,
+  Material,
+  MaterialVariant,
+  Office,
+} from "./types";
 
 export type AdminCategoryRow = Category & { material_count: number };
 
@@ -9,7 +15,6 @@ type AdminMaterialRow = {
   id: string;
   category_id: string;
   name: string;
-  slug: string;
   description: string | null;
   spec: Record<string, string> | null;
   sort_order: number;
@@ -50,7 +55,7 @@ export const listMaterialsForAdmin = cache(async (): Promise<Material[]> => {
   const { data, error } = await supabaseAdmin
     .from("materials")
     .select(
-      "id, category_id, name, slug, description, spec, sort_order, is_active, material_images(sort_order, is_primary, images(url))"
+      "id, category_id, name, description, spec, sort_order, is_active, material_images(sort_order, is_primary, images(url))"
     )
     .eq("tenant_id", tenantId)
     .order("sort_order");
@@ -65,7 +70,6 @@ export const listMaterialsForAdmin = cache(async (): Promise<Material[]> => {
       id: row.id,
       category_id: row.category_id,
       name: row.name,
-      slug: row.slug,
       image_url: primary?.images?.url ?? null,
       description: row.description,
       spec: row.spec,
@@ -76,13 +80,115 @@ export const listMaterialsForAdmin = cache(async (): Promise<Material[]> => {
   });
 });
 
-export type OrderStatus =
-  | "pending"
-  | "approved"
-  | "rejected"
-  | "shipped"
-  | "completed"
-  | "cancelled";
+export type MaterialImageRow = {
+  image_id: string;
+  url: string;
+  caption: string | null;
+  sort_order: number;
+  is_primary: boolean;
+};
+
+export type MaterialDetail = Material & {
+  variants: MaterialVariant[];
+  images: MaterialImageRow[];
+};
+
+type MaterialDetailRaw = {
+  id: string;
+  category_id: string;
+  name: string;
+  description: string | null;
+  spec: Record<string, string> | null;
+  sort_order: number;
+  is_active: boolean;
+  material_variants: MaterialVariant[] | null;
+  material_images:
+    | {
+        image_id: string;
+        sort_order: number;
+        is_primary: boolean;
+        images: { url: string; caption: string | null } | null;
+      }[]
+    | null;
+};
+
+export async function getMaterialDetail(
+  id: string
+): Promise<MaterialDetail | null> {
+  const tenantId = await getTenantId();
+  const { data, error } = await supabaseAdmin
+    .from("materials")
+    .select(
+      "id, category_id, name, description, spec, sort_order, is_active, material_variants(id, material_id, name, unit, sku, spec, sort_order, is_active), material_images(image_id, sort_order, is_primary, images(url, caption))"
+    )
+    .eq("tenant_id", tenantId)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+
+  const raw = data as unknown as MaterialDetailRaw;
+  const images: MaterialImageRow[] = (raw.material_images ?? [])
+    .filter((mi) => mi.images?.url)
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((mi) => ({
+      image_id: mi.image_id,
+      url: mi.images!.url,
+      caption: mi.images!.caption,
+      sort_order: mi.sort_order,
+      is_primary: mi.is_primary,
+    }));
+  const primary = images.find((i) => i.is_primary) ?? images[0];
+  const variants = (raw.material_variants ?? [])
+    .slice()
+    .sort((a, b) => a.sort_order - b.sort_order);
+
+  return {
+    id: raw.id,
+    category_id: raw.category_id,
+    name: raw.name,
+    description: raw.description,
+    spec: raw.spec,
+    sort_order: raw.sort_order,
+    is_active: raw.is_active,
+    image_url: primary?.url ?? null,
+    catalog_pages: images.map((i) => i.url),
+    variants,
+    images,
+  };
+}
+
+export type AdminOfficeRow = Office & { in_use_count: number };
+
+export const listOfficesForAdmin = cache(
+  async (): Promise<AdminOfficeRow[]> => {
+    const tenantId = await getTenantId();
+    const { data, error } = await supabaseAdmin
+      .from("offices")
+      .select(
+        "id, name, area, address, phone, fax, sort_order, is_active, orders(id)"
+      )
+      .eq("tenant_id", tenantId)
+      .order("sort_order");
+    if (error) throw error;
+
+    type Row = Office & { orders: { id: string }[] | null };
+    return ((data ?? []) as unknown as Row[]).map((row) => ({
+      id: row.id,
+      name: row.name,
+      area: row.area,
+      address: row.address,
+      phone: row.phone,
+      fax: row.fax,
+      sort_order: row.sort_order,
+      is_active: row.is_active,
+      in_use_count: row.orders?.length ?? 0,
+    }));
+  }
+);
+
+export type { OrderStatus } from "./order-status";
+import type { OrderStatus } from "./order-status";
 
 export type OrderListRow = {
   id: string;
@@ -329,11 +435,56 @@ export async function countActiveMaterials(): Promise<number> {
   return count ?? 0;
 }
 
-export const statusLabels: Record<OrderStatus, { label: string; color: string }> = {
-  pending: { label: "未確認", color: "bg-yellow-100 text-yellow-800" },
-  approved: { label: "承認済", color: "bg-blue-100 text-blue-800" },
-  rejected: { label: "却下", color: "bg-red-100 text-red-800" },
-  shipped: { label: "出荷済", color: "bg-purple-100 text-purple-800" },
-  completed: { label: "完了", color: "bg-green-100 text-green-800" },
-  cancelled: { label: "キャンセル", color: "bg-surface-muted text-muted" },
+export async function countOrdersInMonth(status?: OrderStatus): Promise<number> {
+  const tenantId = await getTenantId();
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  let query = supabaseAdmin
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("tenant_id", tenantId)
+    .gte("created_at", monthStart);
+  if (status) query = query.eq("status", status);
+  const { count, error } = await query;
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export type RecentOrderRow = {
+  id: string;
+  order_number: string;
+  company_name: string;
+  status: OrderStatus;
+  created_at: string;
 };
+
+export async function listRecentOrders(limit: number): Promise<RecentOrderRow[]> {
+  const tenantId = await getTenantId();
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .select("id, order_number, company_name, status, created_at")
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as unknown as RecentOrderRow[];
+}
+
+export { statusLabels } from "./order-status";
+
+export type AdminUserRow = {
+  id: string;
+  email: string;
+  created_at: string;
+};
+
+export async function listAdminUsers(): Promise<AdminUserRow[]> {
+  const tenantId = await getTenantId();
+  const { data, error } = await supabaseAdmin
+    .from("admin_users")
+    .select("id, email, created_at")
+    .eq("tenant_id", tenantId)
+    .order("created_at");
+  if (error) throw error;
+  return (data ?? []) as AdminUserRow[];
+}
