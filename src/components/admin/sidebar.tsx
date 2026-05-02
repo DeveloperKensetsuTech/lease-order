@@ -44,7 +44,7 @@ export default function Sidebar({ pendingCount, email, onNavigate }: SidebarProp
         { href: "/admin/materials", label: "資材" },
         { href: "/admin/categories", label: "カテゴリ" },
         { href: "/admin/offices", label: "営業所" },
-        { href: "/admin/customers", label: "顧客", disabled: true, hint: "近日" },
+        { href: "/admin/customers", label: "顧客" },
       ],
     },
     {

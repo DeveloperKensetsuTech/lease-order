@@ -88,9 +88,20 @@
 
 ## Phase 6 候補（保留中・別ブランチ進行中含む）
 
-- [ ] 顧客マスタ + 顧客側ログイン（id+pass、1社1アカウント想定）— **別ブランチで進行中**
+- [x] 顧客マスタ + 顧客側ログイン（id+pass、1社1アカウント想定）— `feature/function_of_return` で実装中
 - [ ] 発注フォームに顧客情報のオートフィル / 再発注機能（顧客マスタ完成後）
 - [ ] 発注フォームに任意の email 欄追加 → 顧客向け通知メールが自動的に動き出す（フックは Phase 3 で配置済）
+
+### 借り主機能（function_of_return ブランチ）
+
+- [x] 顧客ログイン（`/login`、bcrypt パスワード）
+- [x] アカウント設定（`/account`、プロフィール / パスワード変更）
+- [x] 発注履歴一覧（`/orders`、ステータスフィルタ）
+- [x] レンタル詳細・返却フロー（`/rentals/[orderId]`、延長 / 返却）
+- [x] 管理側 顧客マスタ CRUD（`/admin/customers`）
+- [ ] 返却期限 N 日前のリマインドメール（Vercel cron + `email_logs`）
+- [ ] 飛び込み発注の再有効化 + 管理側への通知 → アカウント発行プロンプト
+- [ ] 1 会社 N ユーザー（`customer_users` テーブル、招待制）
 
 ---
 
@@ -99,4 +110,4 @@
 - [ ] **Supabase migration 0006 を staging / prod に適用**（未適用だと新規資材作成 / バリエーション編集が失敗する）
 - [ ] **Resend** アカウント作成 + 送信ドメインの DNS 認証
 - [ ] `RESEND_API_KEY` を `.env.local` / Vercel env に設定
-- [ ] `EMAIL_FROM` を認証済みドメインのアドレスに設定（未設定時は `onboarding@resend.dev` フォールバック）
+- [ ] `EMAIL_FROM` を認証済みドメインのアドレスに設定（未設定時は `onboarding@resend.dev` フォールバック)

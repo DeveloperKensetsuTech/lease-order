@@ -34,7 +34,7 @@ function CategoryViewInner({
         href="/"
         className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-6"
       >
-        <span aria-hidden>←</span> トップに戻る
+        <span aria-hidden>←</span> 発注画面に戻る
       </Link>
 
       <h1 className="text-2xl font-bold text-accent mb-1">{category.name}</h1>

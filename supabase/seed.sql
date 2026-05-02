@@ -13,6 +13,10 @@ insert into tenants (id, name, slug) values
 insert into admin_users (tenant_id, email) values
   ('00000000-0000-0000-0000-000000000001', 'admin@kensetsu-tech.com');
 
+-- customers (テスト借り主アカウント。パスワードは全員 'demo1234')
+insert into customers (tenant_id, company_id, name, password_hash, phone, default_address, contact_email, must_change_password) values
+  ('00000000-0000-0000-0000-000000000002', 'C-DEMO-001', 'デモ建設株式会社', '$2a$10$bkHRnvlbdCefWOXHshDVauD.zA5s9KvEM54Mo8/YhgB17v7MvhU.i', '097-000-0001', '大分県大分市新貝6番7号', 'demo@example.com', false);
+
 -- ==================== tenant: union ====================
 
 -- offices (union)

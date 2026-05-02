@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { tenantData } from "./seed-source";
 
 const TENANTS = [
@@ -7,6 +8,25 @@ const TENANTS = [
 
 const ADMIN_USERS: { tenant_slug: string; email: string }[] = [
   { tenant_slug: "union", email: "admin@kensetsu-tech.com" },
+];
+
+const TEST_CUSTOMER_PASSWORD = "demo1234";
+const TEST_CUSTOMERS: {
+  tenant_slug: string;
+  company_id: string;
+  name: string;
+  phone: string | null;
+  default_address: string | null;
+  contact_email: string | null;
+}[] = [
+  {
+    tenant_slug: "sanshin",
+    company_id: "C-DEMO-001",
+    name: "デモ建設株式会社",
+    phone: "097-000-0001",
+    default_address: "大分県大分市新貝6番7号",
+    contact_email: "demo@example.com",
+  },
 ];
 
 function sqlString(s: string | null | undefined): string {
@@ -42,6 +62,18 @@ const adminValues = ADMIN_USERS.map((a) => {
   return `  ('${tenant.id}', ${sqlString(a.email)})`;
 }).join(",\n");
 lines.push(`insert into admin_users (tenant_id, email) values\n${adminValues};`);
+lines.push("");
+
+lines.push("-- customers (テスト借り主アカウント。パスワードは全員 'demo1234')");
+const customerValues = TEST_CUSTOMERS.map((c) => {
+  const tenant = TENANTS.find((t) => t.slug === c.tenant_slug);
+  if (!tenant) throw new Error(`unknown tenant slug for customer: ${c.tenant_slug}`);
+  const hash = bcrypt.hashSync(TEST_CUSTOMER_PASSWORD, 10);
+  return `  ('${tenant.id}', ${sqlString(c.company_id)}, ${sqlString(c.name)}, ${sqlString(hash)}, ${sqlString(c.phone)}, ${sqlString(c.default_address)}, ${sqlString(c.contact_email)}, false)`;
+}).join(",\n");
+lines.push(
+  `insert into customers (tenant_id, company_id, name, password_hash, phone, default_address, contact_email, must_change_password) values\n${customerValues};`
+);
 lines.push("");
 
 for (const tenant of TENANTS) {

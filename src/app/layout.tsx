@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "仮設足場機材の発注管理システム",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

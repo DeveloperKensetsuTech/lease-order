@@ -3,10 +3,11 @@
 import { sendAdminEmail, sendOrderEmail } from "@/lib/email";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getTenantId } from "@/lib/tenant";
+import { getCurrentCustomer } from "@/lib/customer-auth";
 import type { DeliveryMethod } from "@/lib/types";
 
 type SubmitOrderInput = {
-  companyName: string;
+  siteName: string;
   contactName: string;
   phone: string;
   note: string;
@@ -27,10 +28,13 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 export async function submitOrder(
   input: SubmitOrderInput
 ): Promise<SubmitOrderResult> {
-  const companyName = input.companyName.trim();
+  const customer = await getCurrentCustomer();
+  if (!customer) return { ok: false, error: "ログインが必要です" };
+
+  const siteName = input.siteName.trim();
   const contactName = input.contactName.trim();
 
-  if (!companyName) return { ok: false, error: "会社名を入力してください" };
+  if (!siteName) return { ok: false, error: "現場名を入力してください" };
   if (!contactName) return { ok: false, error: "担当者名を入力してください" };
   if (!input.items.length) return { ok: false, error: "カートが空です" };
 
@@ -65,6 +69,9 @@ export async function submitOrder(
   if (!items.length) return { ok: false, error: "有効な明細がありません" };
 
   const tenantId = await getTenantId();
+  if (customer.tenant_id !== tenantId) {
+    return { ok: false, error: "テナントが一致しません" };
+  }
 
   if (input.deliveryMethod === "pickup") {
     const { data: office, error: officeErr } = await supabaseAdmin
@@ -108,9 +115,12 @@ export async function submitOrder(
     .insert({
       tenant_id: tenantId,
       order_number: orderNumber,
-      company_name: companyName,
+      customer_id: customer.id,
+      site_name: siteName,
+      company_name: customer.name,
       contact_name: contactName,
-      phone: input.phone.trim() || null,
+      phone: input.phone.trim() || customer.phone || null,
+      email: customer.contact_email,
       note: input.note.trim() || null,
       delivery_method: input.deliveryMethod,
       delivery_address:
@@ -135,6 +145,7 @@ export async function submitOrder(
       material_id: i.materialId,
       material_name: materialMap.get(i.materialId)!,
       quantity: i.quantity,
+      lease_end_date: input.leaseEndDate,
     }))
   );
 
@@ -153,7 +164,7 @@ export async function submitOrder(
     + (items.length > 5 ? ` ほか${items.length - 5}品目` : "");
   const ctx = {
     orderNumber,
-    companyName,
+    companyName: customer.name,
     contactName,
     itemSummary,
   };

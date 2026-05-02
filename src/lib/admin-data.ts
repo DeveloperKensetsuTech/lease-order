@@ -367,6 +367,52 @@ export const getOrder = cache(async (id: string): Promise<OrderDetail | null> =>
   };
 });
 
+export type AdminCustomerRow = {
+  id: string;
+  company_id: string;
+  name: string;
+  phone: string | null;
+  default_address: string | null;
+  contact_email: string | null;
+  is_active: boolean;
+  must_change_password: boolean;
+  created_at: string;
+};
+
+export async function listCustomersForAdmin(): Promise<AdminCustomerRow[]> {
+  const tenantId = await getTenantId();
+  const { data, error } = await supabaseAdmin
+    .from("customers")
+    .select("id, company_id, name, phone, default_address, contact_email, is_active, must_change_password, created_at")
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as AdminCustomerRow[];
+}
+
+export async function getCustomerForAdmin(id: string): Promise<AdminCustomerRow | null> {
+  const tenantId = await getTenantId();
+  const { data, error } = await supabaseAdmin
+    .from("customers")
+    .select("id, company_id, name, phone, default_address, contact_email, is_active, must_change_password, created_at")
+    .eq("tenant_id", tenantId)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as AdminCustomerRow) ?? null;
+}
+
+export async function countCustomers(): Promise<number> {
+  const tenantId = await getTenantId();
+  const { count, error } = await supabaseAdmin
+    .from("customers")
+    .select("id", { count: "exact", head: true })
+    .eq("tenant_id", tenantId)
+    .eq("is_active", true);
+  if (error) throw error;
+  return count ?? 0;
+}
+
 export async function countPendingOrders(): Promise<number> {
   const tenantId = await getTenantId();
   const { count, error } = await supabaseAdmin
