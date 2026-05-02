@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { getAllMaterials, getCategories } from "@/lib/data";
+import { requireCustomer } from "@/lib/customer-auth";
 import SearchView from "./search-view";
+
+export const dynamic = "force-dynamic";
 
 export default async function SearchPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
+  await requireCustomer();
   const { q } = await searchParams;
   const query = q ?? "";
 
@@ -27,7 +31,7 @@ export default async function SearchPage({
         href="/"
         className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-6"
       >
-        <span aria-hidden>←</span> トップに戻る
+        <span aria-hidden>←</span> 発注画面に戻る
       </Link>
       <SearchView query={query} results={results} categories={categories} />
     </main>

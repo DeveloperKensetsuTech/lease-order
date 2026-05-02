@@ -1,9 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { verifySessionToken, CUSTOMER_COOKIE_NAME } from "@/lib/customer-auth";
 
 const PUBLIC_ADMIN_PATHS = ["/admin/login", "/admin/auth"];
+const PUBLIC_CUSTOMER_PATHS = ["/login"];
 
-export async function proxy(request: NextRequest) {
+async function adminProxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -45,6 +47,36 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
+function customerProxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const isPublic = PUBLIC_CUSTOMER_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+
+  const token = request.cookies.get(CUSTOMER_COOKIE_NAME)?.value;
+  const payload = verifySessionToken(token);
+
+  if (!payload && !isPublic) {
+    const loginUrl = new URL("/login", request.url);
+    if (pathname !== "/") loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  if (payload && pathname === "/login") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  return NextResponse.next({ request });
+}
+
+export async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    return adminProxy(request);
+  }
+  return customerProxy(request);
+}
+
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    // 静的ファイル・画像最適化・favicon を除く全ルート
+    "/((?!_next/static|_next/image|favicon.ico|images|.*\\.png$|.*\\.svg$|.*\\.jpg$).*)",
+  ],
 };

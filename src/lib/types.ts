@@ -35,6 +35,8 @@ export type DeliveryMethod = "delivery" | "pickup";
 export type Order = {
   id: string;
   order_number: string;
+  customer_id: string | null;
+  site_name: string | null;
   company_name: string;
   contact_name: string;
   phone: string | null;
@@ -55,9 +57,34 @@ export type OrderItem = {
   material_id: string;
   material_name: string;
   quantity: number;
+  returned_quantity: number;
+  lease_end_date: string | null;
 };
 
 export type CartItem = {
   material: Material;
   quantity: number;
+};
+
+export type Customer = {
+  id: string;
+  tenant_id: string;
+  company_id: string;
+  name: string;
+  phone: string | null;
+  default_address: string | null;
+  contact_email: string | null;
+  is_active: boolean;
+  must_change_password: boolean;
+  created_at: string;
+};
+
+export type LeaseExtension = {
+  id: string;
+  order_item_id: string;
+  previous_end_date: string;
+  new_end_date: string;
+  reason: string | null;
+  requested_by_customer_id: string | null;
+  requested_at: string;
 };

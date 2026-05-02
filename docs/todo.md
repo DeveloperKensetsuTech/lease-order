@@ -49,3 +49,12 @@
 - [x] 管理画面（/admin）に Supabase Auth マジックリンク認証を追加（`src/proxy.ts` で保護 + `admin_users` 許可リスト）
 - [ ] Supabase ダッシュボードで Email プロバイダ有効化 + Site URL / Redirect URL 設定（staging / prod）
 - [x] テナント別サブドメインルーティングの実装（`src/lib/tenant.ts` で Host から `<slug>.lease-order.kensetsu-tech.com` パターンで動的抽出 → tenant_id 解決。`TENANT_SLUG` env var は override として継続）
+
+### 借り主機能（Phase 2 候補）
+
+- [ ] 過去の発注一覧ページ（`/orders` 等。完了/キャンセル含む全履歴の閲覧）
+- [ ] マイページ（パスワード変更、既定の配送先・電話番号の編集、`must_change_password = true` 時の強制変更フロー）
+- [ ] 返却期限 N 日前のリマインドメール（Vercel cron + `email_logs`）
+- [ ] 飛び込み発注の再有効化 + 管理側への通知 → アカウント発行プロンプト
+- [ ] 1 会社 N ユーザー（`customer_users` テーブル、招待制）
+- [ ] /menu のボトムタブナビ昇格検討（カードが 4 件超えてきたら）

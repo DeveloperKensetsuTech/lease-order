@@ -3,21 +3,22 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
+import type { CustomerSession } from "@/lib/customer-auth";
 import type { DeliveryMethod, Office } from "@/lib/types";
 import { submitOrder } from "./actions";
 import AddressAutocomplete from "./address-autocomplete";
 
-type Props = { offices: Office[] };
+type Props = { offices: Office[]; customer: CustomerSession };
 
-export default function CartForm({ offices }: Props) {
+export default function CartForm({ offices, customer }: Props) {
   const { items, updateQuantity, removeItem, clearCart } = useCart();
   const [step, setStep] = useState<"cart" | "form" | "done">("cart");
-  const [companyName, setCompanyName] = useState("");
+  const [siteName, setSiteName] = useState("");
   const [contactName, setContactName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(customer.phone ?? "");
   const [note, setNote] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("delivery");
-  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState(customer.default_address ?? "");
   const [pickupOfficeId, setPickupOfficeId] = useState("");
   const [leaseStartDate, setLeaseStartDate] = useState("");
   const [leaseEndDate, setLeaseEndDate] = useState("");
@@ -36,7 +37,7 @@ export default function CartForm({ offices }: Props) {
   const selectedOffice = offices.find((o) => o.id === pickupOfficeId);
 
   const isFormValid = (() => {
-    if (!companyName.trim() || !contactName.trim()) return false;
+    if (!siteName.trim() || !contactName.trim()) return false;
     if (!leaseStartDate || !leaseEndDate) return false;
     if (leaseEndDate < leaseStartDate) return false;
     if (deliveryMethod === "delivery" && !deliveryAddress.trim()) return false;
@@ -50,7 +51,7 @@ export default function CartForm({ offices }: Props) {
 
     startTransition(async () => {
       const result = await submitOrder({
-        companyName,
+        siteName,
         contactName,
         phone,
         note,
@@ -95,7 +96,7 @@ export default function CartForm({ offices }: Props) {
           href="/"
           className="inline-block px-8 py-3 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90"
         >
-          トップに戻る
+          発注画面に戻る
         </Link>
       </main>
     );
@@ -128,7 +129,7 @@ export default function CartForm({ offices }: Props) {
             href="/"
             className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-3"
           >
-            <span aria-hidden>←</span> トップに戻る
+            <span aria-hidden>←</span> 発注画面に戻る
           </Link>
           <h1 className="text-2xl font-bold text-accent mb-6">カート</h1>
           <div className="space-y-2 mb-8">
@@ -189,21 +190,27 @@ export default function CartForm({ offices }: Props) {
           <h1 className="text-2xl font-bold text-accent mb-8">発注情報</h1>
           <div className="space-y-10 mb-10">
             <section className="space-y-5">
-              <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider">顧客情報</h2>
+              <h2 className="text-xs font-semibold text-subtle uppercase tracking-wider">発注元</h2>
+              <div className="bg-surface-muted rounded-lg px-4 py-3 text-sm">
+                <p className="text-xs text-subtle">会社名</p>
+                <p className="font-medium text-foreground">{customer.name}</p>
+                <p className="text-xs text-subtle font-mono mt-1">{customer.company_id}</p>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  会社名 <span className="text-red-500">*</span>
+                  現場名 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
+                  value={siteName}
+                  onChange={(e) => setSiteName(e.target.value)}
+                  placeholder="例: ○○ビル新築工事"
                   className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent transition-colors"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  担当者名 <span className="text-red-500">*</span>
+                  現場担当者名 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"

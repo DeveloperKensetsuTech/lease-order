@@ -1,11 +1,15 @@
 import { getCategoryBySlug, getMaterialsByCategory } from "@/lib/data";
+import { requireCustomer } from "@/lib/customer-auth";
 import CategoryView from "./category-view";
+
+export const dynamic = "force-dynamic";
 
 export default async function CategoryPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await requireCustomer();
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
 

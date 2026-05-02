@@ -1,8 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getCategories } from "@/lib/data";
+import { requireCustomer } from "@/lib/customer-auth";
+
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  await requireCustomer();
   const categories = await getCategories();
   return (
     <main className="flex-1">

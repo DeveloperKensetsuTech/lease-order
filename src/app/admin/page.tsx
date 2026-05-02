@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { countActiveMaterials, countPendingOrders } from "@/lib/admin-data";
+import { countActiveMaterials, countCustomers, countPendingOrders } from "@/lib/admin-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [pendingCount, materialCount] = await Promise.all([
+  const [pendingCount, materialCount, customerCount] = await Promise.all([
     countPendingOrders(),
     countActiveMaterials(),
+    countCustomers(),
   ]);
 
   return (
@@ -50,6 +51,18 @@ export default async function AdminPage() {
               <h2 className="text-lg font-semibold text-accent mb-1">カテゴリマスタ</h2>
               <p className="text-sm text-muted">カテゴリの登録・編集・画像管理</p>
             </div>
+          </div>
+        </Link>
+        <Link
+          href="/admin/customers"
+          className="bg-surface p-6 rounded-xl border border-border-strong hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-accent mb-1">顧客管理</h2>
+              <p className="text-sm text-muted">借り主アカウントの発行・管理</p>
+            </div>
+            <span className="text-xs text-subtle">{customerCount}件</span>
           </div>
         </Link>
       </div>
