@@ -1,36 +1,26 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useTransition } from "react";
-import type { Category, Material } from "@/lib/types";
+import type { AdminOfficeRow } from "@/lib/admin-data";
 import {
-  createMaterial,
-  setMaterialActive,
-  updateMaterial,
+  createOffice,
+  deleteOffice,
+  updateOffice,
 } from "@/app/admin/actions";
 
 type EditingState =
-  | { mode: "create"; categoryId: string }
-  | { mode: "edit"; material: Material };
+  | { mode: "create" }
+  | { mode: "edit"; office: AdminOfficeRow };
 
-export default function AdminMaterialsView({
-  categories,
-  allMaterials,
+export default function AdminOfficesView({
+  offices,
 }: {
-  categories: Category[];
-  allMaterials: Material[];
+  offices: AdminOfficeRow[];
 }) {
-  const [selectedCategoryId, setSelectedCategoryId] = useState(
-    categories[0]?.id ?? ""
-  );
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [toastMessage, setToastMessage] = useState("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-
-  const filtered = allMaterials
-    .filter((m) => m.category_id === selectedCategoryId)
-    .sort((a, b) => a.sort_order - b.sort_order);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -42,10 +32,10 @@ export default function AdminMaterialsView({
     startTransition(async () => {
       try {
         if (editing?.mode === "edit") {
-          await updateMaterial(editing.material.id, formData);
+          await updateOffice(editing.office.id, formData);
           showToast("更新しました");
         } else {
-          await createMaterial(formData);
+          await createOffice(formData);
           showToast("追加しました");
         }
         setEditing(null);
@@ -55,98 +45,85 @@ export default function AdminMaterialsView({
     });
   };
 
-  const handleToggleActive = (material: Material) => {
+  const handleDelete = (office: AdminOfficeRow) => {
+    if (office.in_use_count > 0) {
+      showToast(
+        "発注で使われているため削除できません。非公開にしてください。"
+      );
+      return;
+    }
+    if (!confirm(`営業所「${office.name}」を削除します。よろしいですか？`)) return;
     startTransition(async () => {
       try {
-        await setMaterialActive(material.id, !material.is_active);
-        showToast(material.is_active ? "非公開にしました" : "公開しました");
+        await deleteOffice(office.id);
+        showToast("削除しました");
       } catch (e) {
-        setError(e instanceof Error ? e.message : "更新に失敗しました");
+        showToast(e instanceof Error ? e.message : "削除に失敗しました");
       }
     });
   };
 
   return (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
-      <Link
-        href="/admin"
-        className="inline-flex items-center gap-1 text-sm text-subtle hover:text-accent transition-colors mb-3"
-      >
-        <span aria-hidden>←</span> 管理画面に戻る
-      </Link>
-      <h1 className="text-2xl font-bold text-accent mb-6">資材マスタ</h1>
+      <h1 className="text-2xl font-bold text-accent mb-6">営業所マスタ</h1>
 
-      {/* カテゴリ選択 */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-4 px-4">
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setSelectedCategoryId(cat.id)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              selectedCategoryId === cat.id
-                ? "bg-primary text-primary-foreground"
-                : "bg-surface-muted text-muted hover:bg-border"
-            }`}
-          >
-            {cat.name}
-          </button>
-        ))}
-      </div>
-
-      {/* ヘッダー */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm text-subtle">{filtered.length}件</span>
+        <span className="text-sm text-subtle">{offices.length}件</span>
         <button
-          onClick={() =>
-            setEditing({ mode: "create", categoryId: selectedCategoryId })
-          }
+          onClick={() => setEditing({ mode: "create" })}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
         >
           + 新規追加
         </button>
       </div>
 
-      {/* 資材リスト */}
       <div className="space-y-2">
-        {filtered.map((mat) => (
+        {offices.map((o) => (
           <div
-            key={mat.id}
-            className={`flex items-center justify-between p-4 bg-surface rounded-xl border border-border ${
-              !mat.is_active ? "opacity-50" : ""
+            key={o.id}
+            className={`flex items-start justify-between gap-3 p-4 bg-surface rounded-xl border border-border ${
+              !o.is_active ? "opacity-50" : ""
             }`}
           >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 bg-surface-muted rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
-                {mat.image_url ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={mat.image_url}
-                    alt=""
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <span className="text-subtle text-[10px]">NO IMG</span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-sm font-medium text-accent truncate">
+                  {o.name}
+                </p>
+                {o.area && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-muted text-subtle">
+                    {o.area}
+                  </span>
                 )}
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-accent truncate">
-                  {mat.name}
-                </p>
-                <p className="text-xs text-subtle truncate">
-                  {mat.description || "説明なし"}
-                </p>
+              {o.address && (
+                <p className="text-xs text-subtle truncate">{o.address}</p>
+              )}
+              <div className="flex gap-3 mt-1 text-xs text-subtle">
+                {o.phone && <span>TEL {o.phone}</span>}
+                {o.fax && <span>FAX {o.fax}</span>}
+                {o.in_use_count > 0 && (
+                  <span className="text-amber-700">
+                    発注 {o.in_use_count}件で使用
+                  </span>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
-                onClick={() => handleToggleActive(mat)}
-                disabled={isPending}
-                className="text-xs px-2.5 py-1.5 bg-surface-muted text-muted rounded-full hover:bg-surface-muted disabled:opacity-40"
+                onClick={() => handleDelete(o)}
+                disabled={isPending || o.in_use_count > 0}
+                className="text-xs px-2.5 py-1.5 bg-surface-muted text-muted rounded-full hover:bg-red-50 hover:text-red-600 disabled:opacity-30 disabled:hover:bg-surface-muted disabled:hover:text-muted"
+                title={
+                  o.in_use_count > 0
+                    ? "発注で使われているため削除不可"
+                    : "削除"
+                }
               >
-                {mat.is_active ? "非公開" : "公開"}
+                削除
               </button>
               <button
-                onClick={() => setEditing({ mode: "edit", material: mat })}
+                onClick={() => setEditing({ mode: "edit", office: o })}
                 className="text-sm px-3 py-1.5 bg-surface-muted text-muted rounded-full hover:bg-border transition-colors"
               >
                 編集
@@ -156,7 +133,6 @@ export default function AdminMaterialsView({
         ))}
       </div>
 
-      {/* 保存トースト */}
       {toastMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px] pointer-events-none">
           <div className="bg-surface rounded-2xl shadow-2xl px-8 py-6 flex flex-col items-center gap-3">
@@ -180,21 +156,28 @@ export default function AdminMaterialsView({
         </div>
       )}
 
-      {/* 編集モーダル */}
       {editing && (
         <EditModal
-          key={editing.mode === "edit" ? editing.material.id : "new"}
-          categories={categories}
+          key={editing.mode === "edit" ? editing.office.id : "new"}
           initial={
             editing.mode === "edit"
-              ? { ...editing.material }
+              ? {
+                  name: editing.office.name,
+                  area: editing.office.area ?? "",
+                  address: editing.office.address ?? "",
+                  phone: editing.office.phone ?? "",
+                  fax: editing.office.fax ?? "",
+                  sort_order: editing.office.sort_order,
+                  is_active: editing.office.is_active,
+                }
               : {
-                  category_id: editing.categoryId,
                   name: "",
-                  description: "",
-                  sort_order: (filtered.at(-1)?.sort_order ?? 0) + 1,
+                  area: "",
+                  address: "",
+                  phone: "",
+                  fax: "",
+                  sort_order: (offices.at(-1)?.sort_order ?? 0) + 1,
                   is_active: true,
-                  image_url: null,
                 }
           }
           isEdit={editing.mode === "edit"}
@@ -212,16 +195,16 @@ export default function AdminMaterialsView({
 }
 
 type EditInitial = {
-  category_id: string;
   name: string;
-  description: string | null;
+  area: string;
+  address: string;
+  phone: string;
+  fax: string;
   sort_order: number;
   is_active: boolean;
-  image_url?: string | null;
 };
 
 function EditModal({
-  categories,
   initial,
   isEdit,
   pending,
@@ -229,7 +212,6 @@ function EditModal({
   onClose,
   onSubmit,
 }: {
-  categories: Category[];
   initial: EditInitial;
   isEdit: boolean;
   pending: boolean;
@@ -237,33 +219,22 @@ function EditModal({
   onClose: () => void;
   onSubmit: (formData: FormData) => void;
 }) {
-  const [categoryId, setCategoryId] = useState(initial.category_id);
   const [name, setName] = useState(initial.name);
-  const [description, setDescription] = useState(initial.description ?? "");
+  const [area, setArea] = useState(initial.area);
+  const [address, setAddress] = useState(initial.address);
+  const [phone, setPhone] = useState(initial.phone);
+  const [fax, setFax] = useState(initial.fax);
   const [sortOrder, setSortOrder] = useState(initial.sort_order);
   const [isActive, setIsActive] = useState(initial.is_active);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    initial.image_url ?? null
-  );
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
 
   const handleFormAction = (formData: FormData) => {
-    formData.set("category_id", categoryId);
     formData.set("name", name);
-    formData.set("description", description);
+    formData.set("area", area);
+    formData.set("address", address);
+    formData.set("phone", phone);
+    formData.set("fax", fax);
     formData.set("sort_order", String(sortOrder));
     formData.set("is_active", isActive ? "true" : "false");
-    if (imageFile) {
-      formData.set("image", imageFile);
-    }
     onSubmit(formData);
   };
 
@@ -279,7 +250,7 @@ function EditModal({
         <form action={handleFormAction} className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-accent">
-              {isEdit ? "資材を編集" : "資材を追加"}
+              {isEdit ? "営業所を編集" : "営業所を追加"}
             </h2>
             <button
               type="button"
@@ -303,26 +274,7 @@ function EditModal({
           </div>
 
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                カテゴリ
-              </label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent"
-              >
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                資材名 <span className="text-red-500">*</span>
-              </label>
+            <Field label="営業所名" required>
               <input
                 type="text"
                 value={name}
@@ -330,40 +282,40 @@ function EditModal({
                 required
                 className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                説明
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={2}
+            </Field>
+            <Field label="エリア（例: 関東）">
+              <input
+                type="text"
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
                 className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                画像
-              </label>
-              <div className="flex items-center gap-4">
-                {imagePreview && (
-                  <div className="w-16 h-16 bg-surface-muted rounded-lg overflow-hidden flex-shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imagePreview}
-                      alt=""
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                )}
+            </Field>
+            <Field label="住所">
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent"
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="電話番号">
                 <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="text-sm text-muted file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-surface-muted file:text-foreground hover:file:bg-border"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent"
                 />
-              </div>
+              </Field>
+              <Field label="FAX">
+                <input
+                  type="tel"
+                  value={fax}
+                  onChange={(e) => setFax(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-surface-muted rounded-lg text-sm focus:outline-none focus:bg-surface focus:ring-2 focus:ring-accent"
+                />
+              </Field>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex-1">
@@ -389,9 +341,7 @@ function EditModal({
             </div>
           </div>
 
-          {error && (
-            <p className="mt-4 text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
           <div className="flex gap-3 mt-6">
             <button
@@ -412,6 +362,26 @@ function EditModal({
           </div>
         </form>
       </div>
+
+    </div>
+  );
+}
+
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-foreground mb-1.5">
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      {children}
     </div>
   );
 }

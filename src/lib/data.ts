@@ -13,7 +13,6 @@ type MaterialRow = {
   id: string;
   category_id: string;
   name: string;
-  slug: string;
   description: string | null;
   spec: Record<string, string> | null;
   sort_order: number;
@@ -30,7 +29,6 @@ function mapMaterial(row: MaterialRow): Material {
     id: row.id,
     category_id: row.category_id,
     name: row.name,
-    slug: row.slug,
     image_url: primary?.images?.url ?? null,
     description: row.description,
     spec: row.spec,
@@ -56,7 +54,7 @@ export const getAllMaterials = cache(async (): Promise<Material[]> => {
   const { data, error } = await supabase
     .from("materials")
     .select(
-      "id, category_id, name, slug, description, spec, sort_order, is_active, material_images(sort_order, is_primary, images(url))"
+      "id, category_id, name, description, spec, sort_order, is_active, material_images(sort_order, is_primary, images(url))"
     )
     .eq("tenant_id", tenantId)
     .eq("is_active", true)
