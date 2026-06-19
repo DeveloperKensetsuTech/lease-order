@@ -13,6 +13,7 @@ import {
 } from "@/components/admin/ui";
 import OrderActions from "./order-actions";
 import MapView from "@/components/map/map-view";
+import ScheduledReturnsSection from "./scheduled-returns-section";
 import CompletedReturnsSection from "./completed-returns-section";
 import { formatYen, UNIT_LABEL } from "@/lib/pricing";
 
@@ -276,6 +277,8 @@ export default async function OrderDetailPage({
           </div>
         )}
       </section>
+
+      <ScheduledReturnsSection orderId={order.id} />
 
       <CompletedReturnsSection orderId={order.id} />
 
