@@ -1,4 +1,8 @@
-import { listCustomersForAdmin, type AdminCustomerRow } from "@/lib/admin-data";
+import {
+  listCustomersForAdmin,
+  countPendingApplications,
+  type AdminCustomerRow,
+} from "@/lib/admin-data";
 import {
   PageHeader,
   DataTable,
@@ -9,7 +13,10 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminCustomersPage() {
-  const customers = await listCustomersForAdmin();
+  const [customers, pendingApplications] = await Promise.all([
+    listCustomersForAdmin(),
+    countPendingApplications(),
+  ]);
 
   const columns: Column<AdminCustomerRow>[] = [
     {
@@ -67,7 +74,14 @@ export default async function AdminCustomersPage() {
       <PageHeader
         title="顧客管理"
         description="ログイン可能な顧客アカウントを管理します。"
-        actions={<ButtonLink href="/admin/customers/new">+ 新規追加</ButtonLink>}
+        actions={
+          <div className="flex items-center gap-2">
+            <ButtonLink href="/admin/customers/applications" variant="secondary">
+              申請{pendingApplications > 0 ? `（${pendingApplications}）` : ""}
+            </ButtonLink>
+            <ButtonLink href="/admin/customers/new">+ 新規追加</ButtonLink>
+          </div>
+        }
       />
 
       <DataTable

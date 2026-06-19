@@ -21,6 +21,7 @@ const ACTIVE_CHANNELS: Channel[] = [emailChannel, inAppChannel];
 // 承認・出荷など管理者自身の操作（アウトバウンド）は対象外。広げるときはここに追加。
 const TEAM_CHANNEL_KINDS: ReadonlySet<NotificationKind> = new Set([
   "admin_new_order",
+  "admin_new_application",
   "return_requested",
   "extension_requested",
 ]);

@@ -11,6 +11,8 @@ export type Tenant = {
   slug: string;
   billing_rule: BillingRule;
   customer_access_mode: CustomerAccessMode;
+  // 顧客のセルフ申請（アカウント申請）を受け付けるか。
+  customer_self_registration: boolean;
 };
 
 const PRODUCT_DOMAIN = "lease-order.kensetsu-tech.com";
@@ -81,7 +83,7 @@ export const getTenant = cache(async (): Promise<Tenant> => {
   const slug = await resolveSlug();
   const { data, error } = await supabaseAdmin
     .from("tenants")
-    .select("id, slug, billing_rule, customer_access_mode")
+    .select("id, slug, billing_rule, customer_access_mode, customer_self_registration")
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw error;
@@ -92,6 +94,7 @@ export const getTenant = cache(async (): Promise<Tenant> => {
     billing_rule: (data.billing_rule ?? { type: "monthly" }) as BillingRule,
     customer_access_mode:
       (data.customer_access_mode as CustomerAccessMode | null) ?? "guest_browse",
+    customer_self_registration: data.customer_self_registration ?? false,
   };
 });
 

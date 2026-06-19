@@ -29,6 +29,8 @@ export function labelForNotification(row: NotificationRow): string {
       return `ご発注を出荷しました${order ? ` (${order})` : ""}`;
     case "admin_new_order":
       return `新規発注: ${company}${order ? ` ${order}` : ""}`;
+    case "admin_new_application":
+      return `アカウント申請: ${company}`;
     case "return_requested":
       return `返却申請: ${company}`;
     case "return_scheduled":
@@ -71,6 +73,9 @@ export function linkForNotification(
   row: NotificationRow,
   audience: "customer" | "admin"
 ): string {
+  if (row.kind === "admin_new_application") {
+    return "/admin/customers/applications";
+  }
   if (!row.order_id) {
     return audience === "admin" ? "/admin" : "/rentals";
   }
