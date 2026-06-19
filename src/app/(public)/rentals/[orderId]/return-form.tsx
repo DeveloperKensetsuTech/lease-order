@@ -61,8 +61,10 @@ export default function ReturnForm({
     returnableItems.length > 0 ? "return" : "extend"
   );
 
-  // 返却モード: デフォルトで全品目チェック。除外したい品目を保持
-  const [returnExcluded, setReturnExcluded] = useState<Set<string>>(new Set());
+  // 返却モード: 品目ごとの返却数量。初期値は各品目の残数（全量）。0 にすると対象外。
+  const [returnQty, setReturnQty] = useState<Record<string, number>>(() =>
+    Object.fromEntries(returnableItems.map((it) => [it.id, it.effective_remaining]))
+  );
 
   // 返却モード: 輸送手段と希望日
   const [transportMethod, setTransportMethod] = useState<"pickup" | "dropoff">("pickup");
@@ -95,8 +97,8 @@ export default function ReturnForm({
   const [isPending, startTransition] = useTransition();
 
   const returnTargets = useMemo(
-    () => returnableItems.filter((it) => !returnExcluded.has(it.id)),
-    [returnableItems, returnExcluded]
+    () => returnableItems.filter((it) => (returnQty[it.id] ?? 0) > 0),
+    [returnableItems, returnQty]
   );
   const extendTargets = useMemo(
     () => extendableItems.filter((it) => !extendExcluded.has(it.id)),
@@ -108,7 +110,7 @@ export default function ReturnForm({
       return returnTargets.map((it) => ({
         type: "return" as const,
         orderItemId: it.id,
-        deltaQuantity: it.effective_remaining,
+        deltaQuantity: returnQty[it.id] ?? 0,
         transportMethod,
         desiredDate,
         dropoffOfficeId: transportMethod === "dropoff" ? dropoffOfficeId : null,
@@ -124,6 +126,7 @@ export default function ReturnForm({
   }, [
     mode,
     returnTargets,
+    returnQty,
     extendTargets,
     extendDate,
     extendReason,
@@ -143,13 +146,9 @@ export default function ReturnForm({
       ? returnTargets.length > 0 && isReturnTransportValid
       : Boolean(extendDate) && extendDate >= minExtendDate && extendTargets.length > 0;
 
-  function toggleReturnExclude(id: string) {
-    setReturnExcluded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  function setReturnQuantity(id: string, raw: number, max: number) {
+    const clamped = Number.isFinite(raw) ? Math.max(0, Math.min(Math.floor(raw), max)) : 0;
+    setReturnQty((prev) => ({ ...prev, [id]: clamped }));
   }
 
   function toggleExtendExclude(id: string) {
@@ -187,6 +186,11 @@ export default function ReturnForm({
       router.refresh();
     });
   }
+
+  const returnPreview = useMemo(
+    () => returnTargets.map((it) => ({ item: it, quantity: returnQty[it.id] ?? 0 })),
+    [returnTargets, returnQty]
+  );
 
   const extendPreview = useMemo(
     () =>
@@ -255,8 +259,10 @@ export default function ReturnForm({
             <p className="text-xs text-muted mt-1">
               対象: <span className="font-semibold text-foreground tabular-nums">{returnTargets.length}</span>{" "}
               / {returnableItems.length} 品目
-              {returnExcluded.size > 0 && (
-                <span className="ml-2 text-subtle">（{returnExcluded.size} 件を除外中）</span>
+              {returnableItems.length - returnTargets.length > 0 && (
+                <span className="ml-2 text-subtle">
+                  （{returnableItems.length - returnTargets.length} 件を除外中）
+                </span>
               )}
             </p>
           </div>
@@ -346,24 +352,16 @@ export default function ReturnForm({
             )}
           </div>
 
-          <details className="mt-4 border-t border-border pt-3 group">
-            <summary className="cursor-pointer text-xs font-medium text-muted hover:text-foreground inline-flex items-center gap-1.5">
-              <span aria-hidden className="transition-transform group-open:rotate-90">›</span>
-              品目ごとに調整する
-            </summary>
-            <ul className="mt-3 divide-y divide-border">
+          <div className="mt-4 border-t border-border pt-3">
+            <p className="text-xs font-medium text-muted mb-2">
+              返却する数量を品目ごとに指定できます（0 で対象外）
+            </p>
+            <ul className="divide-y divide-border">
               {returnableItems.map((it) => {
-                const excluded = returnExcluded.has(it.id);
+                const qty = returnQty[it.id] ?? 0;
                 return (
-                  <li key={it.id} className="py-2.5 flex items-start gap-3">
-                    <input
-                      id={`ret-${it.id}`}
-                      type="checkbox"
-                      checked={!excluded}
-                      onChange={() => toggleReturnExclude(it.id)}
-                      className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-2 focus:ring-accent/40"
-                    />
-                    <label htmlFor={`ret-${it.id}`} className="flex-1 min-w-0 cursor-pointer">
+                  <li key={it.id} className="py-2.5 flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-2 flex-wrap">
                         <span className="text-sm text-foreground">{it.material_name}</span>
                         {it.is_overdue && (
@@ -378,7 +376,7 @@ export default function ReturnForm({
                         )}
                       </div>
                       <div className="text-xs text-subtle mt-0.5 tabular-nums">
-                        返却数 × {it.effective_remaining}
+                        残 {it.effective_remaining}
                         {it.lease_end_date && (
                           <>
                             <span className="mx-1.5">·</span>
@@ -386,12 +384,31 @@ export default function ReturnForm({
                           </>
                         )}
                       </div>
-                    </label>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <label htmlFor={`ret-${it.id}`} className="sr-only">
+                        {it.material_name} の返却数量
+                      </label>
+                      <input
+                        id={`ret-${it.id}`}
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        max={it.effective_remaining}
+                        step={1}
+                        value={qty}
+                        onChange={(e) =>
+                          setReturnQuantity(it.id, e.target.valueAsNumber, it.effective_remaining)
+                        }
+                        className="w-16 h-8 px-2 text-sm text-right tabular-nums bg-surface border border-border rounded focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
+                      />
+                      <span className="text-xs text-subtle tabular-nums">/ {it.effective_remaining}</span>
+                    </div>
                   </li>
                 );
               })}
             </ul>
-          </details>
+          </div>
         </section>
       )}
 
@@ -547,7 +564,7 @@ export default function ReturnForm({
 
       {showConfirm && (
         <ConfirmModal
-          returns={mode === "return" ? returnTargets : []}
+          returns={mode === "return" ? returnPreview : []}
           returnTransport={
             mode === "return"
               ? {

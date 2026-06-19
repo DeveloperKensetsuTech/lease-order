@@ -17,7 +17,7 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
 }: {
-  returns: RentalItemRow[];
+  returns: { item: RentalItemRow; quantity: number }[];
   returnTransport: {
     transportMethod: "pickup" | "dropoff";
     desiredDate: string;
@@ -81,13 +81,13 @@ export default function ConfirmModal({
                 </div>
               )}
               <ul className="divide-y divide-border">
-                {returns.map((it) => (
+                {returns.map(({ item, quantity }) => (
                   <li
-                    key={it.id}
+                    key={item.id}
                     className="flex items-baseline justify-between gap-3 py-2 text-sm"
                   >
-                    <span className="text-foreground truncate">{it.material_name}</span>
-                    <span className="text-foreground flex-shrink-0 tabular-nums">× {it.effective_remaining}</span>
+                    <span className="text-foreground truncate">{item.material_name}</span>
+                    <span className="text-foreground flex-shrink-0 tabular-nums">× {quantity}</span>
                   </li>
                 ))}
               </ul>
