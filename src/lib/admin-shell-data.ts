@@ -12,8 +12,9 @@ import { countUnreadForAdmin as countChatUnreadForAdmin } from "./chat/data";
 import { getTenantId } from "./tenant";
 
 export type SidebarData = {
-  pendingCount: number;
-  pendingRequestCount: number;
+  // 承認インボックス（発注 pending ＋ 返却・延長 pending ＋ 受領待ち）の総件数。
+  // インボックスのカード数（項目レベル）と一致する。
+  pendingApprovalCount: number;
   chatUnreadCount: number;
   email: string | null;
 };
@@ -52,7 +53,15 @@ const getAdminContext = cache(
 // TTL のみ — 10 秒の遅延は MVP 段階で許容できる範囲。
 const getCachedSidebarCounts = unstable_cache(
   async (tenantId: string) => {
-    const [pendingOrdersRes, returnsRes, extensionsRes, chatUnreadCount] = await Promise.all([
+    // 承認インボックスのカード数に揃えて項目レベルで head count を取る:
+    //   発注 pending ＋ 返却 pending ＋ 延長 pending ＋ 受領待ち（scheduled）。
+    const [
+      pendingOrdersRes,
+      returnsPendingRes,
+      extensionsRes,
+      returnsScheduledRes,
+      chatUnreadCount,
+    ] = await Promise.all([
       supabaseAdmin
         .from("orders")
         .select("id", { count: "exact", head: true })
@@ -60,30 +69,27 @@ const getCachedSidebarCounts = unstable_cache(
         .eq("status", "pending"),
       supabaseAdmin
         .from("return_requests")
-        .select("status, order_items!inner(order_id)")
-        .eq("tenant_id", tenantId)
-        .in("status", ["pending", "scheduled"]),
-      supabaseAdmin
-        .from("lease_extensions")
-        .select("order_items!inner(order_id)")
+        .select("id", { count: "exact", head: true })
         .eq("tenant_id", tenantId)
         .eq("status", "pending"),
+      supabaseAdmin
+        .from("lease_extensions")
+        .select("id", { count: "exact", head: true })
+        .eq("tenant_id", tenantId)
+        .eq("status", "pending"),
+      supabaseAdmin
+        .from("return_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("tenant_id", tenantId)
+        .eq("status", "scheduled"),
       countChatUnreadForAdmin(tenantId),
     ]);
-    const orderIds = new Set<string>();
-    for (const row of (returnsRes.data ?? []) as unknown as Array<{
-      order_items: { order_id: string } | null;
-    }>) {
-      if (row.order_items?.order_id) orderIds.add(row.order_items.order_id);
-    }
-    for (const row of (extensionsRes.data ?? []) as unknown as Array<{
-      order_items: { order_id: string } | null;
-    }>) {
-      if (row.order_items?.order_id) orderIds.add(row.order_items.order_id);
-    }
     return {
-      pendingCount: pendingOrdersRes.count ?? 0,
-      pendingRequestCount: orderIds.size,
+      pendingApprovalCount:
+        (pendingOrdersRes.count ?? 0) +
+        (returnsPendingRes.count ?? 0) +
+        (extensionsRes.count ?? 0) +
+        (returnsScheduledRes.count ?? 0),
       chatUnreadCount,
     };
   },
@@ -98,8 +104,7 @@ export async function getSidebarData(): Promise<SidebarData> {
     getAdminContext(),
   ]);
   return {
-    pendingCount: counts.pendingCount,
-    pendingRequestCount: counts.pendingRequestCount,
+    pendingApprovalCount: counts.pendingApprovalCount,
     chatUnreadCount: counts.chatUnreadCount,
     email: ctx.email,
   };
