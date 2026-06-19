@@ -54,12 +54,13 @@ const getAdminContext = cache(
 const getCachedSidebarCounts = unstable_cache(
   async (tenantId: string) => {
     // 承認インボックスのカード数に揃えて項目レベルで head count を取る:
-    //   発注 pending ＋ 返却 pending ＋ 延長 pending ＋ 受領待ち（scheduled）。
+    //   発注 pending ＋ 返却 pending ＋ 延長 pending ＋ 受領待ち（scheduled）＋ 登録申請 pending。
     const [
       pendingOrdersRes,
       returnsPendingRes,
       extensionsRes,
       returnsScheduledRes,
+      applicationsRes,
       chatUnreadCount,
     ] = await Promise.all([
       supabaseAdmin
@@ -82,6 +83,11 @@ const getCachedSidebarCounts = unstable_cache(
         .select("id", { count: "exact", head: true })
         .eq("tenant_id", tenantId)
         .eq("status", "scheduled"),
+      supabaseAdmin
+        .from("customer_applications")
+        .select("id", { count: "exact", head: true })
+        .eq("tenant_id", tenantId)
+        .eq("status", "pending"),
       countChatUnreadForAdmin(tenantId),
     ]);
     return {
@@ -89,7 +95,8 @@ const getCachedSidebarCounts = unstable_cache(
         (pendingOrdersRes.count ?? 0) +
         (returnsPendingRes.count ?? 0) +
         (extensionsRes.count ?? 0) +
-        (returnsScheduledRes.count ?? 0),
+        (returnsScheduledRes.count ?? 0) +
+        (applicationsRes.count ?? 0),
       chatUnreadCount,
     };
   },

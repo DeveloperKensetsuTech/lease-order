@@ -293,15 +293,20 @@ function CardBody({ item }: { item: ApprovalItem }) {
       );
     }
     case "registration":
-      // Phase 2（会員登録ブランチ merge 後）で生成・表示する。
       return (
         <div className="mt-1.5">
           <p className="text-sm font-semibold text-foreground truncate">
             {item.companyName}
           </p>
-          {item.contactName && (
-            <p className="text-xs text-muted mt-0.5">{item.contactName}</p>
+          <p className="text-xs text-muted mt-0.5">
+            {item.contactName ? `${item.contactName} ／ ` : ""}
+            <span className="break-all">{item.email}</span>
+          </p>
+          {item.phone && <p className="text-xs text-muted mt-0.5">{item.phone}</p>}
+          {item.note && (
+            <p className="text-xs text-muted mt-1 whitespace-pre-wrap">{item.note}</p>
           )}
+          <p className="text-xs text-subtle mt-1">{formatRelative(item.requestedAt)}</p>
         </div>
       );
   }
@@ -353,7 +358,14 @@ function CardActions({
         />
       );
     case "registration":
-      // Phase 2 で RegistrationActions を埋め込む。
-      return null;
+      // 承認はアカウント発行＋初期パスワード表示を伴うため、専用ページで処理する。
+      return (
+        <Link
+          href="/admin/customers/applications"
+          className="px-3 h-8 inline-flex items-center text-xs font-semibold bg-accent text-white rounded hover:bg-accent-hover transition-colors flex-shrink-0"
+        >
+          申請を確認 →
+        </Link>
+      );
   }
 }

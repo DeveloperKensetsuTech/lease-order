@@ -3,6 +3,7 @@ import { getTenantId } from "./tenant";
 import {
   listPendingRequests,
   listScheduledReturns,
+  listPendingApplications,
   type PendingReturnRequest,
   type PendingExtensionRequest,
   type ScheduledReturnRequest,
@@ -53,14 +54,18 @@ export type ApprovalReturnReceiptItem = {
   data: ScheduledReturnRequest;
 };
 
-// Phase 2（会員登録ブランチ merge 後）で生成。現状は produce されない。
+// 会員登録（顧客セルフ申請 customer_applications）の pending。
+// 承認はアカウント発行＋初期パスワード表示を伴う深いフローのため、
+// インボックスでは表示・トリアージのみ行い、操作は専用の
+// /admin/customers/applications に誘導する（発注の数量修正と同じ方針）。
 export type ApprovalRegistrationItem = {
   kind: "registration";
-  id: string; // = customer id
+  id: string; // = customer_applications.id
   companyName: string;
   contactName: string | null;
-  email: string | null;
-  emailVerified: boolean;
+  email: string;
+  phone: string | null;
+  note: string | null;
   requestedAt: string;
 };
 
@@ -117,13 +122,27 @@ async function listPendingOrderApprovals(): Promise<ApprovalOrderItem[]> {
 
 // 未対応の承認項目を種類をまたいで取得し、申請時刻の降順で 1 ストリームに統合する。
 export async function listPendingApprovals(): Promise<ApprovalItem[]> {
-  const [orders, pendingRequests, scheduled] = await Promise.all([
+  const [orders, pendingRequests, scheduled, applications] = await Promise.all([
     listPendingOrderApprovals(),
     listPendingRequests(),
     listScheduledReturns(),
+    listPendingApplications(),
   ]);
 
   const items: ApprovalItem[] = [...orders];
+
+  for (const a of applications) {
+    items.push({
+      kind: "registration",
+      id: a.id,
+      companyName: a.company_name,
+      contactName: a.contact_name,
+      email: a.contact_email,
+      phone: a.phone,
+      note: a.note,
+      requestedAt: a.created_at,
+    });
+  }
 
   for (const r of pendingRequests) {
     if (r.type === "return") {
@@ -148,38 +167,49 @@ export async function listPendingApprovals(): Promise<ApprovalItem[]> {
 
 // サイドバーの badge 用。インボックスのカード数（＝項目数）と一致するよう
 // 項目レベルで head count を取り、合算する。
-// 発注 pending ＋ 返却 pending ＋ 延長 pending ＋ 受領待ち（scheduled）。
+// 発注 pending ＋ 返却 pending ＋ 延長 pending ＋ 受領待ち（scheduled）＋ 登録申請 pending。
 export async function countPendingApprovals(): Promise<number> {
   const tenantId = await getTenantId();
   const supabase = await getSupabaseTenant();
-  const [ordersRes, returnsPendingRes, extensionsRes, returnsScheduledRes] =
-    await Promise.all([
-      supabase
-        .from("orders")
-        .select("id", { count: "exact", head: true })
-        .eq("tenant_id", tenantId)
-        .eq("status", "pending"),
-      supabase
-        .from("return_requests")
-        .select("id", { count: "exact", head: true })
-        .eq("tenant_id", tenantId)
-        .eq("status", "pending"),
-      supabase
-        .from("lease_extensions")
-        .select("id", { count: "exact", head: true })
-        .eq("tenant_id", tenantId)
-        .eq("status", "pending"),
-      supabase
-        .from("return_requests")
-        .select("id", { count: "exact", head: true })
-        .eq("tenant_id", tenantId)
-        .eq("status", "scheduled"),
-    ]);
+  const [
+    ordersRes,
+    returnsPendingRes,
+    extensionsRes,
+    returnsScheduledRes,
+    applicationsRes,
+  ] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("status", "pending"),
+    supabase
+      .from("return_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("status", "pending"),
+    supabase
+      .from("lease_extensions")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("status", "pending"),
+    supabase
+      .from("return_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("status", "scheduled"),
+    supabase
+      .from("customer_applications")
+      .select("id", { count: "exact", head: true })
+      .eq("tenant_id", tenantId)
+      .eq("status", "pending"),
+  ]);
 
   return (
     (ordersRes.count ?? 0) +
     (returnsPendingRes.count ?? 0) +
     (extensionsRes.count ?? 0) +
-    (returnsScheduledRes.count ?? 0)
+    (returnsScheduledRes.count ?? 0) +
+    (applicationsRes.count ?? 0)
   );
 }
