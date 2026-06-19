@@ -20,16 +20,14 @@ type NavGroup = {
 };
 
 export type SidebarProps = {
-  pendingCount: number;
-  pendingRequestCount: number;
+  pendingApprovalCount: number;
   chatUnreadCount: number;
   email: string | null;
   onNavigate?: () => void;
 };
 
 export default function Sidebar({
-  pendingCount,
-  pendingRequestCount,
+  pendingApprovalCount,
   chatUnreadCount,
   email,
   onNavigate,
@@ -44,15 +42,14 @@ export default function Sidebar({
       items: [
         { href: "/admin", label: "ダッシュボード" },
         {
-          href: "/admin/orders",
-          label: "発注管理",
-          badge: pendingCount > 0 ? pendingCount : undefined,
+          href: "/admin/approvals",
+          label: "承認インボックス",
+          badge: pendingApprovalCount > 0 ? pendingApprovalCount : undefined,
         },
-        {
-          href: "/admin/requests",
-          label: "返却・延長申請",
-          badge: pendingRequestCount > 0 ? pendingRequestCount : undefined,
-        },
+        // 発注管理・返却/延長申請は管理/履歴ビュー。pending の通知は
+        // 承認インボックスに一本化したため、ここでは badge を出さない。
+        { href: "/admin/orders", label: "発注管理" },
+        { href: "/admin/requests", label: "返却・延長申請" },
         {
           href: "/admin/messages",
           label: "メッセージ",
