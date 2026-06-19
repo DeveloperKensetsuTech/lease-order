@@ -5,23 +5,24 @@
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { getTenantId } from "@/lib/tenant";
+import { getTenant } from "@/lib/tenant";
 import { setCustomerSession, clearCustomerSession } from "@/lib/customer-auth";
 
 export type LoginResult = { ok: true } | { ok: false; error: string };
 
 export async function login(input: { companyId: string; password: string; next?: string }): Promise<LoginResult> {
   const companyId = input.companyId.trim();
-  const password = input.password;
+  // 仮パスワードのコピペで混入しがちな前後の空白/改行を吸収する（保存側も trim 済み）。
+  const password = input.password.trim();
   if (!companyId || !password) {
     return { ok: false, error: "会社 ID とパスワードを入力してください" };
   }
 
-  const tenantId = await getTenantId();
+  const tenant = await getTenant();
   const { data, error } = await supabaseAdmin
     .from("customers")
     .select("id, password_hash, is_active")
-    .eq("tenant_id", tenantId)
+    .eq("tenant_id", tenant.id)
     .eq("company_id", companyId)
     .maybeSingle();
 
@@ -35,10 +36,13 @@ export async function login(input: { companyId: string; password: string; next?:
   const ok = await bcrypt.compare(password, hash);
 
   if (!data || !data.is_active || !ok) {
+    // レスポンスは enumeration 対策で曖昧なまま。原因切り分け用にログだけ区別する。
+    const reason = !data ? "lookup_miss" : !data.is_active ? "inactive" : "password_mismatch";
+    console.warn(`login failed: ${reason} tenant=${tenant.slug} companyId=${companyId}`);
     return { ok: false, error: "会社 ID またはパスワードが正しくありません" };
   }
 
-  await setCustomerSession(data.id, tenantId);
+  await setCustomerSession(data.id, tenant.id);
   return { ok: true };
 }
 

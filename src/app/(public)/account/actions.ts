@@ -95,13 +95,17 @@ export type ChangePasswordResult = { ok: true; mustChangePasswordCleared: boolea
 export async function changePassword(input: ChangePasswordInput): Promise<ChangePasswordResult> {
   const customer = await requireCustomer({ allowMustChangePassword: true });
 
-  if (!input.currentPassword || !input.newPassword) {
+  // login 側の trim と整合させる（前後空白入りのパスワードを保存させない）。
+  const currentPassword = input.currentPassword.trim();
+  const newPassword = input.newPassword.trim();
+
+  if (!currentPassword || !newPassword) {
     return { ok: false, error: "現在のパスワードと新しいパスワードを入力してください" };
   }
-  if (input.newPassword.length < 8) {
+  if (newPassword.length < 8) {
     return { ok: false, error: "新しいパスワードは 8 文字以上で入力してください" };
   }
-  if (input.newPassword === input.currentPassword) {
+  if (newPassword === currentPassword) {
     return { ok: false, error: "新しいパスワードは現在のパスワードと異なるものにしてください" };
   }
 
@@ -117,12 +121,12 @@ export async function changePassword(input: ChangePasswordInput): Promise<Change
     return { ok: false, error: "ユーザー情報の取得に失敗しました" };
   }
 
-  const ok = await bcrypt.compare(input.currentPassword, data.password_hash);
+  const ok = await bcrypt.compare(currentPassword, data.password_hash);
   if (!ok) {
     return { ok: false, error: "現在のパスワードが正しくありません" };
   }
 
-  const newHash = await bcrypt.hash(input.newPassword, 12);
+  const newHash = await bcrypt.hash(newPassword, 12);
   const { error: updateErr } = await supabaseAdmin
     .from("customers")
     .update({ password_hash: newHash, must_change_password: false })

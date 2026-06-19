@@ -104,14 +104,20 @@ export async function resetCustomerPassword(id: string): Promise<{ ok: true; tem
   const tempPassword = generateTempPassword();
   const passwordHash = await bcrypt.hash(tempPassword, 12);
 
-  const { error } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from("customers")
     .update({ password_hash: passwordHash, must_change_password: true })
     .eq("tenant_id", tenantId)
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
   if (error) {
     console.error("resetCustomerPassword error", error);
     return { ok: false, error: "パスワードのリセットに失敗しました" };
+  }
+  // 0 行更新（別テナントの id・削除済み等）を成功扱いにしない。
+  if (!data || data.length === 0) {
+    console.error("resetCustomerPassword: no rows updated", { tenantId, id });
+    return { ok: false, error: "対象の顧客が見つかりませんでした" };
   }
   revalidatePath(`/admin/customers/${id}`);
   return { ok: true, tempPassword };
