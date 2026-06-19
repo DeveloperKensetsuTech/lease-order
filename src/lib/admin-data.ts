@@ -891,6 +891,41 @@ export async function countCustomers(): Promise<number> {
   return count ?? 0;
 }
 
+export type AdminApplicationRow = {
+  id: string;
+  company_name: string;
+  contact_name: string | null;
+  phone: string | null;
+  contact_email: string;
+  note: string | null;
+  created_at: string;
+};
+
+export async function listPendingApplications(): Promise<AdminApplicationRow[]> {
+  const tenantId = await getTenantId();
+  const supabase = await getSupabaseTenant();
+  const { data, error } = await supabase
+    .from("customer_applications")
+    .select("id, company_name, contact_name, phone, contact_email, note, created_at")
+    .eq("tenant_id", tenantId)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as AdminApplicationRow[];
+}
+
+export async function countPendingApplications(): Promise<number> {
+  const tenantId = await getTenantId();
+  const supabase = await getSupabaseTenant();
+  const { count, error } = await supabase
+    .from("customer_applications")
+    .select("id", { count: "exact", head: true })
+    .eq("tenant_id", tenantId)
+    .eq("status", "pending");
+  if (error) throw error;
+  return count ?? 0;
+}
+
 export async function countPendingOrders(): Promise<number> {
   const tenantId = await getTenantId();
   const supabase = await getSupabaseTenant();

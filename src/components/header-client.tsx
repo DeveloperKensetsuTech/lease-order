@@ -151,14 +151,16 @@ function SearchBar({ className }: { className?: string }) {
 export default function HeaderClient({
   customer,
   notificationBell,
+  selfRegistrationEnabled = false,
 }: {
   customer: CustomerSummary | null;
   notificationBell: React.ReactNode;
+  selfRegistrationEnabled?: boolean;
 }) {
   const { totalItems } = useCart();
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
-  const isAuthPage = pathname === "/login";
+  const isAuthPage = pathname === "/login" || pathname === "/register";
 
   if (isAuthPage) {
     return null;
@@ -230,6 +232,14 @@ export default function HeaderClient({
                 </span>
               )}
             </Link>
+            {!customer && selfRegistrationEnabled && (
+              <Link
+                href="/register"
+                className="inline-flex items-center h-10 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors whitespace-nowrap"
+              >
+                アカウント申請
+              </Link>
+            )}
             {!customer && (
               <Link
                 href="/login"
