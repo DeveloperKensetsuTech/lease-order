@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { CustomerAccessMode } from "@/lib/tenant";
-import { setCustomerAccessMode } from "./actions";
+import { setCustomerAccessMode, setCustomerSelfRegistration } from "./actions";
 import { PageHeader, SectionRule } from "@/components/admin/ui";
 
 const MODE_OPTIONS: {
@@ -26,10 +26,13 @@ const MODE_OPTIONS: {
 
 export default function SettingsView({
   initialMode,
+  initialSelfRegistration,
 }: {
   initialMode: CustomerAccessMode;
+  initialSelfRegistration: boolean;
 }) {
   const [mode, setMode] = useState<CustomerAccessMode>(initialMode);
+  const [selfReg, setSelfReg] = useState<boolean>(initialSelfRegistration);
   const [toast, setToast] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -46,6 +49,21 @@ export default function SettingsView({
       const res = await setCustomerAccessMode(next);
       if (!res.ok) {
         setMode(prev);
+        showToast(res.error);
+      } else {
+        showToast("保存しました");
+      }
+    });
+  };
+
+  const toggleSelfReg = () => {
+    if (isPending) return;
+    const next = !selfReg;
+    setSelfReg(next);
+    startTransition(async () => {
+      const res = await setCustomerSelfRegistration(next);
+      if (!res.ok) {
+        setSelfReg(!next);
         showToast(res.error);
       } else {
         showToast("保存しました");
@@ -100,6 +118,43 @@ export default function SettingsView({
             );
           })}
         </div>
+      </section>
+
+      <section className="mb-10">
+        <SectionRule label="アカウント申請" className="mb-3" />
+        <button
+          type="button"
+          onClick={toggleSelfReg}
+          disabled={isPending}
+          aria-pressed={selfReg}
+          className={`w-full text-left px-4 py-3 border transition-colors ${
+            selfReg
+              ? "border-accent bg-[var(--color-accent-soft)]"
+              : "border-rule hover:bg-surface-muted"
+          } ${isPending ? "opacity-60" : ""}`}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-medium text-foreground">
+              顧客からのアカウント申請を受け付ける
+            </span>
+            <span
+              aria-hidden
+              className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors ${
+                selfReg ? "bg-accent" : "bg-rule-strong"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                  selfReg ? "translate-x-4" : "translate-x-0.5"
+                }`}
+              />
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-muted leading-relaxed">
+            ログイン画面・カタログから「アカウント申請」を受け付けます。申請は「顧客管理 →
+            申請」で承認すると、会社 ID と初期パスワードが申請者のメールに送信されます。
+          </p>
+        </button>
       </section>
 
       {toast && (

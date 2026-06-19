@@ -4,6 +4,7 @@ export type NotificationKind =
   | "order_cancelled"
   | "order_shipped"
   | "admin_new_order"
+  | "admin_new_application"
   | "return_requested"
   | "return_scheduled"
   | "return_completed"

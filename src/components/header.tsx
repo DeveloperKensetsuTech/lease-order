@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { getCurrentCustomer } from "@/lib/customer-auth";
 import { getCustomerHeaderData } from "@/lib/header-data";
+import { getTenant } from "@/lib/tenant";
 import HeaderClient from "./header-client";
 import CustomerNav from "./customer-nav";
 import {
@@ -17,7 +18,14 @@ function BellSkeleton() {
 export default async function Header() {
   const customer = await getCurrentCustomer();
   if (!customer) {
-    return <HeaderClient customer={null} notificationBell={null} />;
+    const tenant = await getTenant();
+    return (
+      <HeaderClient
+        customer={null}
+        notificationBell={null}
+        selfRegistrationEnabled={tenant.customer_self_registration}
+      />
+    );
   }
   const customerProp = {
     id: customer.id,

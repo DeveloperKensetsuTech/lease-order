@@ -88,6 +88,21 @@ export function renderTemplate(
           .filter(Boolean)
           .join("\n"),
       };
+    case "admin_new_application":
+      return {
+        subject: `【アカウント申請】${ctx.companyName}`,
+        body: [
+          "新しいアカウント申請が届きました。",
+          "",
+          `会社: ${ctx.companyName}`,
+          ctx.contactName ? `担当: ${ctx.contactName}` : "",
+          "",
+          "管理画面の「顧客管理 → 申請」から承認・却下を行ってください。",
+          ctx.adminUrl ? `詳細: ${ctx.adminUrl}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n"),
+      };
     case "return_requested":
       return {
         subject: `【返却申請】${ctx.orderNumber} - ${ctx.companyName}`,

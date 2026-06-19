@@ -25,6 +25,12 @@ function isGuestBrowsable(pathname: string): boolean {
   return false;
 }
 
+// 未ログインでも常に開放する顧客側パス（認証導線そのもの）。
+// login モード / guest_browse モードを問わず通す。
+function isPublicCustomerPath(pathname: string): boolean {
+  return pathname === "/login" || pathname === "/register";
+}
+
 async function adminProxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -158,15 +164,15 @@ async function customerProxy(request: NextRequest) {
   const payload = verifySessionToken(token);
 
   if (payload) {
-    // ログイン済みがログイン画面に来たらカタログへ。
-    if (pathname === "/login") {
+    // ログイン済みがログイン/申請画面に来たらカタログへ。
+    if (isPublicCustomerPath(pathname)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next({ request });
   }
 
-  // 未ログイン。ログイン画面はそのまま表示。
-  if (pathname === "/login") return NextResponse.next({ request });
+  // 未ログイン。ログイン/申請画面はそのまま表示。
+  if (isPublicCustomerPath(pathname)) return NextResponse.next({ request });
 
   // guest_browse モードならカタログ系パスはゲスト通過。それ以外（login モード or
   // 保護パス）は /login へ。発注・履歴等は requireCustomer でも守られる二重防御。
